@@ -33,6 +33,11 @@ newsroom ingest-world-bible \
   --source-markdown data/world-bible.md \
   --seed-json data/worlds/world_bible.seed.v1.json \
   --world-id world-main
+
+# Summarize world state for debugging
+newsroom world-summary
+newsroom world-summary --output json
+newsroom world-summary --world-id world-new-meridian
 ```
 
 ## Environment Variables

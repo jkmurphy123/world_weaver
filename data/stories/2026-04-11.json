@@ -1,0 +1,53 @@
+{
+  "date": "2026-04-11",
+  "stories": [
+    {
+      "headline": "Meridian Council announces changes across New Meridian Special Administrative Zone",
+      "summary": "Officials and residents in New Meridian Special Administrative Zone react to new directives.",
+      "body": "Where is Vex? Field reporting indicates unfolding consequences tied to decision cycle 1.",
+      "category": "politics",
+      "metadata": {
+        "story_id": "story-2026-04-11-001",
+        "published_at": "2026-04-11T11:58:17.708693Z",
+        "target_date": "2026-04-11",
+        "world_id": "world-new-meridian"
+      }
+    },
+    {
+      "headline": "Meridian Council announces changes across New Meridian Special Administrative Zone",
+      "summary": "Officials and residents in New Meridian Special Administrative Zone react to new directives.",
+      "body": "Where is Vex? Field reporting indicates unfolding consequences tied to decision cycle 2.",
+      "category": "business",
+      "metadata": {
+        "story_id": "story-2026-04-11-002",
+        "published_at": "2026-04-11T11:58:17.708693Z",
+        "target_date": "2026-04-11",
+        "world_id": "world-new-meridian"
+      }
+    },
+    {
+      "headline": "Meridian Council announces changes across New Meridian Special Administrative Zone",
+      "summary": "Officials and residents in New Meridian Special Administrative Zone react to new directives.",
+      "body": "Where is Vex? Field reporting indicates unfolding consequences tied to decision cycle 3.",
+      "category": "science",
+      "metadata": {
+        "story_id": "story-2026-04-11-003",
+        "published_at": "2026-04-11T11:58:17.708693Z",
+        "target_date": "2026-04-11",
+        "world_id": "world-new-meridian"
+      }
+    },
+    {
+      "headline": "Meridian Council announces changes across New Meridian Special Administrative Zone",
+      "summary": "Officials and residents in New Meridian Special Administrative Zone react to new directives.",
+      "body": "Where is Vex? Field reporting indicates unfolding consequences tied to decision cycle 4.",
+      "category": "culture",
+      "metadata": {
+        "story_id": "story-2026-04-11-004",
+        "published_at": "2026-04-11T11:58:17.708693Z",
+        "target_date": "2026-04-11",
+        "world_id": "world-new-meridian"
+      }
+    }
+  ]
+}
