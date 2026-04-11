@@ -1,0 +1,101 @@
+{
+  "metadata": {
+    "name": "A Synthetic Island World",
+    "genre": "science fiction",
+    "tone": "investigative",
+    "seed": 42,
+    "generated_at": "2026-04-11T11:16:45.385423Z"
+  },
+  "premise": "A synthetic island city ruled by corporate blocs.",
+  "regions": [
+    {
+      "name": "Central Arcology",
+      "climate": "humid tropical",
+      "landmarks": [
+        "Council Apex"
+      ]
+    }
+  ],
+  "factions": [
+    {
+      "name": "Meridian Council",
+      "ideology": "stability through managed information",
+      "influence": 84
+    }
+  ],
+  "story_hooks": [
+    "Council reforms trigger unrest as independent reporters expose corruption."
+  ],
+  "world": {
+    "id": "a-synthetic-island-world",
+    "name": "A Synthetic Island World",
+    "genre": "science fiction",
+    "tone": "investigative",
+    "premise": "A synthetic island city ruled by corporate blocs.",
+    "calendar_mode": "real_time_daily"
+  },
+  "style_guide": {
+    "news_voice": "direct, factual, and city-beat focused",
+    "allowed_story_types": [
+      "politics",
+      "business",
+      "science",
+      "culture"
+    ],
+    "taboos": [
+      "out-of-world references"
+    ]
+  },
+  "continuity": {
+    "current_date": "2026-04-11",
+    "major_facts": [
+      "A consortium of corporate blocs governs the city.",
+      "Class divisions are tied to physical district elevation."
+    ],
+    "rules": [
+      "No supernatural events.",
+      "Technological change has social consequences."
+    ]
+  },
+  "locations": [
+    {
+      "id": "loc-a-synthetic-island-world-central",
+      "name": "Meridian Central",
+      "description": "Administrative and corporate district.",
+      "confidence_tier": "core_canon"
+    },
+    {
+      "id": "loc-a-synthetic-island-world-stack",
+      "name": "The Stack",
+      "description": "Dense worker district with informal markets.",
+      "confidence_tier": "established"
+    }
+  ],
+  "organizations": [
+    {
+      "id": "org-a-synthetic-island-world-council",
+      "name": "Meridian Council",
+      "description": "Consortium that sets policy and resource access.",
+      "confidence_tier": "core_canon"
+    }
+  ],
+  "people": [
+    {
+      "id": "person-a-synthetic-island-world-editor",
+      "name": "Elara Quinn",
+      "role": "Investigative editor",
+      "affiliation": "Meridian Council Press Desk",
+      "status": "active",
+      "confidence_tier": "established"
+    }
+  ],
+  "timeline": [
+    {
+      "id": "event-a-synthetic-island-world-founding",
+      "date": "2074-01-12",
+      "title": "Council charter ratified",
+      "summary": "The council formally consolidated administrative control.",
+      "confidence_tier": "core_canon"
+    }
+  ]
+}
