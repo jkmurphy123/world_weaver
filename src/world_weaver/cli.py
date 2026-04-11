@@ -1,10 +1,13 @@
 from datetime import date
+from pathlib import Path
 
 import typer
 import uvicorn
 
 from world_weaver.app import create_app
 from world_weaver.config import get_settings
+from world_weaver.llm.factory import build_provider
+from world_weaver.services.init_world_service import InitWorldService
 from world_weaver.services.story_service import StoryService
 from world_weaver.services.world_generation import WorldGenerationService
 
@@ -41,6 +44,34 @@ def generate_news(target_date: str = typer.Option(..., "--date", help="Date in Y
     batch = story_service.generate_daily_batch(target_date=parsed_date, world_bible=world)
     output_path = story_service.save_batch(batch)
     typer.echo(f"Generated {len(batch.stories)} stories for {parsed_date.isoformat()} at {output_path}")
+
+
+@app.command("init-world")
+def init_world(
+    prompt: str | None = typer.Option(None, "--prompt", help="Seed prompt text"),
+    prompt_file: Path | None = typer.Option(None, "--prompt-file", help="Path to file with seed prompt"),
+) -> None:
+    """Generate and persist the initial world bible from a seed prompt."""
+    if bool(prompt) == bool(prompt_file):
+        raise typer.BadParameter("Provide exactly one of --prompt or --prompt-file")
+
+    settings = get_settings()
+    provider = build_provider(settings)
+    seed_prompt = prompt if prompt is not None else prompt_file.read_text(encoding="utf-8")
+
+    service = InitWorldService(
+        provider=provider,
+        prompts_dir=Path(__file__).resolve().parent / "prompts",
+        worlds_dir=settings.data_dir / "worlds",
+    )
+    world, json_path, markdown_path = service.generate_and_save(seed_prompt=seed_prompt, model=settings.llm_model)
+    typer.echo(
+        "Initialized world "
+        f"'{world.metadata.name}' with {len(world.people)} people, "
+        f"{len(world.organizations)} organizations, and {len(world.locations)} locations."
+    )
+    typer.echo(f"Saved JSON: {json_path}")
+    typer.echo(f"Saved markdown: {markdown_path}")
 
 
 if __name__ == "__main__":

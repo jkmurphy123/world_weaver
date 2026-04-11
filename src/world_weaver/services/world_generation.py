@@ -6,7 +6,19 @@ from collections.abc import Callable
 from datetime import datetime, timezone
 from typing import Any
 
-from world_weaver.schemas import Faction, Region, WorldBible, WorldMetadata
+from world_weaver.schemas import (
+    CanonLocation,
+    CanonOrganization,
+    CanonPerson,
+    Continuity,
+    Faction,
+    Region,
+    StyleGuide,
+    TimelineEvent,
+    WorldBible,
+    WorldInfo,
+    WorldMetadata,
+)
 
 Clock = Callable[[], datetime]
 
@@ -42,12 +54,66 @@ class WorldGenerationService:
             seed=seed,
             generated_at=self._clock(),
         )
+        world_id = self._make_world_id(name, seed)
         return WorldBible(
             metadata=metadata,
             premise=premise,
             regions=regions,
             factions=factions,
             story_hooks=story_hooks,
+            world=WorldInfo(
+                id=world_id,
+                name=name,
+                genre=genre,
+                tone=tone,
+                premise=premise,
+                calendar_mode="real_time_daily",
+            ),
+            style_guide=StyleGuide(
+                news_voice="clear, reportorial, and grounded in observable events",
+                allowed_story_types=["politics", "business", "science", "culture", "human_interest"],
+                taboos=["out-of-world references"],
+            ),
+            continuity=Continuity(
+                current_date=self._clock().date(),
+                major_facts=[f"{name} is shaped by factional power and information asymmetry."],
+                rules=["No magic without explicit world rule support."],
+            ),
+            locations=[
+                CanonLocation(
+                    id=f"loc-{world_id}-central",
+                    name=regions[0].name,
+                    description=f"Primary power center in {name}.",
+                    confidence_tier="core_canon",
+                )
+            ],
+            organizations=[
+                CanonOrganization(
+                    id=f"org-{world_id}-prime",
+                    name=factions[0].name,
+                    description=f"Leading organization with ideology: {factions[0].ideology}.",
+                    confidence_tier="core_canon",
+                )
+            ],
+            people=[
+                CanonPerson(
+                    id=f"person-{world_id}-editor",
+                    name="Ari Solenne",
+                    role="Senior correspondent",
+                    affiliation=factions[0].name,
+                    status="active",
+                    confidence_tier="established",
+                )
+            ],
+            timeline=[
+                TimelineEvent(
+                    id=f"event-{world_id}-founding",
+                    date=self._clock().date(),
+                    title=f"{name} enters documented canon",
+                    summary=f"Initial world state recorded with primary faction {factions[0].name}.",
+                    confidence_tier="core_canon",
+                )
+            ],
         )
 
     def to_persistence_row(self, world_bible: WorldBible) -> dict[str, Any]:
