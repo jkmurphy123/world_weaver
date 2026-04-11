@@ -2,9 +2,17 @@ from __future__ import annotations
 
 import json
 import re
+from dataclasses import dataclass
 from datetime import datetime, timezone
 
 from world_weaver.llm.base import LLMProvider, PromptRequest
+
+
+@dataclass(slots=True, frozen=True)
+class ConnectionStatus:
+    provider: str
+    model: str
+    message: str
 
 
 class MockLLMProvider(LLMProvider):
@@ -105,6 +113,13 @@ class MockLLMProvider(LLMProvider):
         }
 
         return json.dumps(payload)
+
+    def check_connection(self, model: str) -> ConnectionStatus:
+        return ConnectionStatus(
+            provider="mock",
+            model=model,
+            message="Mock provider is available locally",
+        )
 
     def _generate_story_batch(self, request: PromptRequest) -> str:
         now = datetime.now(tz=timezone.utc)

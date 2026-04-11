@@ -118,6 +118,33 @@ def test_generate_news_command_accepts_canonical_world_bible_shape(tmp_path, mon
     assert (tmp_path / "stories" / "2026-04-11.json").exists()
 
 
+def test_set_llm_provider_command_persists_selection(tmp_path, monkeypatch) -> None:
+    env_path = tmp_path / ".env"
+    monkeypatch.setenv("NEWSROOM_ENV_FILE", str(env_path))
+
+    result = runner.invoke(app, ["set-llm-provider", "--provider", "openai", "--model", "gpt-4.1"])
+
+    assert result.exit_code == 0
+    assert "Saved provider=openai model=gpt-4.1" in result.stdout
+    persisted = env_path.read_text(encoding="utf-8")
+    assert "NEWSROOM_LLM_PROVIDER=openai" in persisted
+    assert "NEWSROOM_LLM_MODEL=gpt-4.1" in persisted
+
+
+def test_test_llm_connection_uses_selected_mock_provider(tmp_path, monkeypatch) -> None:
+    env_path = tmp_path / ".env"
+    env_path.write_text(
+        "NEWSROOM_LLM_PROVIDER=mock\nNEWSROOM_LLM_MODEL=mock-world-architect-v1\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("NEWSROOM_ENV_FILE", str(env_path))
+
+    result = runner.invoke(app, ["test-llm-connection"])
+
+    assert result.exit_code == 0
+    assert "LLM connection OK: provider=mock" in result.stdout
+
+
 def test_init_world_command_accepts_prompt_text(tmp_path, monkeypatch) -> None:
     monkeypatch.setenv("NEWSROOM_DATA_DIR", str(tmp_path))
     monkeypatch.setenv("NEWSROOM_LLM_PROVIDER", "mock")

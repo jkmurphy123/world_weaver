@@ -7,7 +7,7 @@ import typer
 import uvicorn
 
 from world_weaver.app import create_app
-from world_weaver.config import get_settings
+from world_weaver.config import get_settings, update_settings_file
 from world_weaver.llm.factory import build_provider
 from world_weaver.services.init_world_service import InitWorldService
 from world_weaver.services.story_service import StoryService
@@ -15,6 +15,12 @@ from world_weaver.services.world_bible_ingest_service import WorldBibleIngestSer
 from world_weaver.storage.sqlite_world_store import SqliteWorldStore, WorldEntityRepository
 
 app = typer.Typer(help="World Weaver newsroom CLI")
+
+
+def _default_model_for_provider(provider: str) -> str:
+    if provider == "openai":
+        return "gpt-4.1"
+    return "mock-world-architect-v1"
 
 
 @app.command()
@@ -50,6 +56,51 @@ def generate_news(target_date: str = typer.Option(..., "--date", help="Date in Y
     )
     output_path = story_service.save_batch(batch)
     typer.echo(f"Generated {len(batch.stories)} stories for {parsed_date.isoformat()} at {output_path}")
+
+
+@app.command("set-llm-provider")
+def set_llm_provider(
+    provider: str = typer.Option(..., "--provider", help="Provider to use: mock or openai"),
+    model: str | None = typer.Option(None, "--model", help="Optional model override"),
+) -> None:
+    """Persist the selected LLM provider and model in the local .env file."""
+    normalized = provider.strip().lower()
+    if normalized not in {"mock", "openai"}:
+        raise typer.BadParameter("Provider must be one of: mock, openai")
+
+    settings = get_settings()
+    selected_model = model or (
+        settings.llm_model if settings.llm_provider == normalized and settings.llm_model else _default_model_for_provider(normalized)
+    )
+    settings_path = update_settings_file(
+        {
+            "NEWSROOM_LLM_PROVIDER": normalized,
+            "NEWSROOM_LLM_MODEL": selected_model,
+        }
+    )
+
+    typer.echo(f"Saved provider={normalized} model={selected_model} to {settings_path}")
+    if normalized == "openai" and not settings.openai_api_key:
+        typer.echo("OpenAI API key not found in NEWSROOM_OPENAI_API_KEY or OPENAI_API_KEY.")
+    typer.echo("Run `newsroom test-llm-connection` before generating stories.")
+
+
+@app.command("test-llm-connection")
+def test_llm_connection(model: str | None = typer.Option(None, "--model", help="Optional model override")) -> None:
+    """Test connectivity for the currently selected LLM provider."""
+    settings = get_settings()
+    selected_model = model or settings.llm_model
+
+    try:
+        provider = build_provider(settings)
+        status = provider.check_connection(selected_model)
+    except Exception as exc:
+        typer.echo(f"LLM connection test failed: {exc}")
+        raise typer.Exit(code=1) from exc
+
+    typer.echo(
+        f"LLM connection OK: provider={status.provider} model={status.model} message={status.message}"
+    )
 
 
 @app.command("init-world")

@@ -14,3 +14,6 @@ class PromptRequest:
 class LLMProvider(Protocol):
     def generate_json(self, request: PromptRequest) -> str:
         """Return a JSON string response for the supplied prompt."""
+
+    def check_connection(self, model: str) -> object:
+        """Validate provider configuration for the supplied model."""

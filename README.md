@@ -27,6 +27,13 @@ newsroom init-world --prompt-file ./seed_prompt.txt
 # Generate one daily story batch
 newsroom generate-news --date 2026-04-11
 
+# Persist the selected LLM provider/model for this repo
+newsroom set-llm-provider --provider mock
+newsroom set-llm-provider --provider openai --model gpt-4.1
+
+# Verify the selected provider/model before generation
+newsroom test-llm-connection
+
 # Ingest markdown + seed json into canonical files and SQLite entities
 newsroom ingest-world-bible
 newsroom ingest-world-bible \
@@ -53,7 +60,10 @@ NEWSROOM_DEFAULT_STORY_COUNT=4
 NEWSROOM_LLM_PROVIDER=mock
 NEWSROOM_LLM_MODEL=mock-world-architect-v1
 NEWSROOM_OPENAI_API_KEY=
+OPENAI_API_KEY=
 ```
+
+`set-llm-provider` writes `NEWSROOM_LLM_PROVIDER` and `NEWSROOM_LLM_MODEL` into a local `.env` file. Process environment variables still override `.env` values when present.
 
 ## API Endpoints (Current)
 
