@@ -119,5 +119,15 @@ class StoryService:
         payload = json.loads(path.read_text(encoding="utf-8"))
         return StoryBatch.model_validate(payload)
 
+    def load_latest_batch(self) -> StoryBatch | None:
+        if not self._stories_dir.exists():
+            return None
+
+        story_paths = sorted(self._stories_dir.glob("*.json"), reverse=True)
+        for path in story_paths:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            return StoryBatch.model_validate(payload)
+        return None
+
     def _load_prompt_template(self, filename: str) -> str:
         return (self._prompts_dir / filename).read_text(encoding="utf-8")

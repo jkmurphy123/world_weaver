@@ -42,6 +42,14 @@ def create_app() -> FastAPI:
             raise HTTPException(status_code=404, detail="Story batch not found for date")
         return batch
 
+    @app.get("/stories/latest", response_model=StoryBatch)
+    def get_latest_stories() -> StoryBatch:
+        service = StoryService(settings.data_dir / "stories")
+        batch = service.load_latest_batch()
+        if batch is None:
+            raise HTTPException(status_code=404, detail="No story batches have been published")
+        return batch
+
     @app.get("/stories/{target_date}", response_model=StoryBatch)
     def get_stories_by_date(target_date: date) -> StoryBatch:
         service = StoryService(settings.data_dir / "stories")
@@ -50,12 +58,14 @@ def create_app() -> FastAPI:
             raise HTTPException(status_code=404, detail="Story batch not found for date")
         return batch
 
+    @app.get("/feed/rss.xml")
     @app.get("/feeds/rss.xml")
     def get_rss_feed() -> Response:
         feed_service = FeedService(settings.data_dir / "stories", app_name=settings.app_name)
         stories = feed_service.load_published_stories()
         return Response(content=feed_service.build_rss(stories), media_type="application/rss+xml")
 
+    @app.get("/feed/atom.xml")
     @app.get("/feeds/atom.xml")
     def get_atom_feed() -> Response:
         feed_service = FeedService(settings.data_dir / "stories", app_name=settings.app_name)

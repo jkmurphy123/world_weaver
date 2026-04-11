@@ -92,3 +92,30 @@ def test_atom_feed_contains_required_fields_and_ordering(tmp_path, monkeypatch) 
     assert entries[0].findtext("atom:targetDate", namespaces=ns) == "2026-04-09"
     assert entries[0].findtext("atom:worldId", namespaces=ns) == "chronicle-sphere-42"
     assert entries[0].find("atom:category", ns).attrib["term"] == "science"
+
+
+def test_singular_feed_routes_match_milestone_4_paths(tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("NEWSROOM_DATA_DIR", str(tmp_path))
+    _seed_story_batches(tmp_path)
+    client = TestClient(create_app())
+
+    rss_response = client.get("/feed/rss.xml")
+    atom_response = client.get("/feed/atom.xml")
+
+    assert rss_response.status_code == 200
+    assert rss_response.headers["content-type"].startswith("application/rss+xml")
+    assert atom_response.status_code == 200
+    assert atom_response.headers["content-type"].startswith("application/atom+xml")
+
+
+def test_latest_stories_endpoint_returns_newest_batch(tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("NEWSROOM_DATA_DIR", str(tmp_path))
+    _seed_story_batches(tmp_path)
+    client = TestClient(create_app())
+
+    response = client.get("/stories/latest")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["date"] == "2026-04-09"
+    assert payload["stories"][0]["metadata"]["story_id"] == "story-2026-04-09-001"
