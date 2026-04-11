@@ -1,5 +1,9 @@
+import json
 from datetime import date, datetime, timezone
 
+import pytest
+
+from world_weaver.llm.base import PromptRequest
 from world_weaver.schemas import WorldBible
 from world_weaver.services.story_service import StoryService
 from world_weaver.services.world_generation import WorldGenerationService
@@ -54,3 +58,87 @@ def test_story_batch_is_persisted_and_loaded_by_date(tmp_path) -> None:
 def test_load_batch_returns_none_for_missing_date(tmp_path) -> None:
     service = StoryService(stories_dir=tmp_path / "stories")
     assert service.load_batch(date(2026, 4, 10)) is None
+
+
+class _StubReporterProvider:
+    def __init__(self, payload: str) -> None:
+        self._payload = payload
+        self.requests: list[PromptRequest] = []
+
+    def generate_json(self, request: PromptRequest) -> str:
+        self.requests.append(request)
+        return self._payload
+
+
+def test_generate_reported_batch_validates_reporter_output(tmp_path) -> None:
+    world = _build_world()
+    prompts_dir = tmp_path / "prompts"
+    prompts_dir.mkdir(parents=True, exist_ok=True)
+    (prompts_dir / "reporter_daily.md").write_text("You are the News Reporter.", encoding="utf-8")
+    provider = _StubReporterProvider(
+        json.dumps(
+            {
+                "date": "2026-04-09",
+                "stories": [
+                    {
+                        "headline": "Council vote reshapes transit grid",
+                        "summary": "A late vote changes freight access routes.",
+                        "body": "Long-form article body.",
+                        "category": "politics",
+                        "metadata": {
+                            "story_id": "story-2026-04-09-001",
+                            "published_at": "2026-04-09T10:00:00+00:00",
+                            "target_date": "2026-04-09",
+                            "world_id": "chronicle-sphere-42",
+                        },
+                    }
+                ],
+            }
+        )
+    )
+    service = StoryService(stories_dir=tmp_path / "stories", provider=provider, prompts_dir=prompts_dir)
+
+    batch = service.generate_reported_batch(
+        target_date=date(2026, 4, 9),
+        world_bible=world,
+        model="mock-reporter-v1",
+        count=1,
+    )
+
+    assert batch.date == date(2026, 4, 9)
+    assert len(batch.stories) == 1
+    assert provider.requests[0].model == "mock-reporter-v1"
+
+
+def test_generate_reported_batch_rejects_invalid_json(tmp_path) -> None:
+    world = _build_world()
+    prompts_dir = tmp_path / "prompts"
+    prompts_dir.mkdir(parents=True, exist_ok=True)
+    (prompts_dir / "reporter_daily.md").write_text("You are the News Reporter.", encoding="utf-8")
+    provider = _StubReporterProvider("{not json")
+    service = StoryService(stories_dir=tmp_path / "stories", provider=provider, prompts_dir=prompts_dir)
+
+    with pytest.raises(ValueError, match="invalid JSON"):
+        service.generate_reported_batch(
+            target_date=date(2026, 4, 9),
+            world_bible=world,
+            model="mock-reporter-v1",
+            count=1,
+        )
+
+
+def test_generate_reported_batch_rejects_invalid_schema(tmp_path) -> None:
+    world = _build_world()
+    prompts_dir = tmp_path / "prompts"
+    prompts_dir.mkdir(parents=True, exist_ok=True)
+    (prompts_dir / "reporter_daily.md").write_text("You are the News Reporter.", encoding="utf-8")
+    provider = _StubReporterProvider(json.dumps({"date": "2026-04-09", "stories": [{"headline": "Missing fields"}]}))
+    service = StoryService(stories_dir=tmp_path / "stories", provider=provider, prompts_dir=prompts_dir)
+
+    with pytest.raises(ValueError, match="StoryBatch schema"):
+        service.generate_reported_batch(
+            target_date=date(2026, 4, 9),
+            world_bible=world,
+            model="mock-reporter-v1",
+            count=1,
+        )

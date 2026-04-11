@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     world_db_filename: str = "world.db"
     default_world_id: str = "world-main"
     default_world_name: str = "New Meridian"
+    default_story_count: int = 4
     llm_provider: str = "mock"
     llm_model: str = "mock-world-architect-v1"
     openai_api_key: str | None = None

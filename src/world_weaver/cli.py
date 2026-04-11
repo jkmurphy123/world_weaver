@@ -10,7 +10,6 @@ from world_weaver.llm.factory import build_provider
 from world_weaver.services.init_world_service import InitWorldService
 from world_weaver.services.story_service import StoryService
 from world_weaver.services.world_bible_ingest_service import WorldBibleIngestService
-from world_weaver.services.world_generation import WorldGenerationService
 from world_weaver.storage.sqlite_world_store import SqliteWorldStore
 
 app = typer.Typer(help="World Weaver newsroom CLI")
@@ -33,17 +32,20 @@ def generate_news(target_date: str = typer.Option(..., "--date", help="Date in Y
     settings = get_settings()
     parsed_date = date.fromisoformat(target_date)
 
-    world_service = WorldGenerationService()
-    story_service = StoryService(settings.data_dir / "stories")
-
-    world = world_service.generate_world_bible(
-        name="Chronicle Sphere",
-        genre="science fantasy",
-        tone="investigative",
-        premise="A hidden archive leaks state secrets to ordinary citizens.",
-        seed=42,
+    world_path = settings.data_dir / "worlds" / "world_bible.json"
+    provider = build_provider(settings)
+    story_service = StoryService(
+        settings.data_dir / "stories",
+        provider=provider,
+        prompts_dir=Path(__file__).resolve().parent / "prompts",
     )
-    batch = story_service.generate_daily_batch(target_date=parsed_date, world_bible=world)
+    world = story_service.load_world_bible(world_path)
+    batch = story_service.generate_reported_batch(
+        target_date=parsed_date,
+        world_bible=world,
+        model=settings.llm_model,
+        count=settings.default_story_count,
+    )
     output_path = story_service.save_batch(batch)
     typer.echo(f"Generated {len(batch.stories)} stories for {parsed_date.isoformat()} at {output_path}")
 

@@ -1,0 +1,53 @@
+{
+  "date": "2026-04-10",
+  "stories": [
+    {
+      "headline": "Investigative committee opens hearing on port-auction leak",
+      "summary": "Lawmakers launched a formal hearing after sealed bids surfaced overnight, raising claims of procurement tampering.",
+      "body": "The civic oversight committee opened hearings after leaked bid ledgers named senior procurement aides and external brokers. Witness testimony focused on Council Hall (loc-chronicle-sphere-42-central), where chain-of-custody logs reportedly diverge from archived submission times. Officials from Investigative Consortium denied direct involvement and called for an independent audit before any contract awards proceed.",
+      "category": "politics",
+      "metadata": {
+        "story_id": "story-2026-04-10-001",
+        "published_at": "2026-04-10T08:00:00Z",
+        "target_date": "2026-04-10",
+        "world_id": "chronicle-sphere-42"
+      }
+    },
+    {
+      "headline": "Transit bond spreads widen as insurers reprice corridor risk",
+      "summary": "Municipal debt insurers increased premiums for two freight corridors after new sabotage warnings.",
+      "body": "Insurers widened spreads on new transit bonds after operators reported two nights of signaling outages near the eastern freight line. Treasury desks said repricing remained contained, but logistics firms warned that prolonged uncertainty could shift commodity routing costs for small cooperatives. Market supervisors expect a secondary-round review if outage claims are confirmed by infrastructure auditors.",
+      "category": "business",
+      "metadata": {
+        "story_id": "story-2026-04-10-002",
+        "published_at": "2026-04-10T08:00:00Z",
+        "target_date": "2026-04-10",
+        "world_id": "chronicle-sphere-42"
+      }
+    },
+    {
+      "headline": "University observatory reports repeatable anomaly in relay lattice",
+      "summary": "Researchers said a newly documented relay oscillation could explain recent communication dead zones.",
+      "body": "The North Arc Observatory published preprint measurements showing a repeatable oscillation in the relay lattice at specific load thresholds. Lab teams described the finding as preliminary but actionable, recommending immediate firmware throttles while replication studies continue. Infrastructure agencies said emergency channels remain online and no public-safety interruption has been verified.",
+      "category": "science",
+      "metadata": {
+        "story_id": "story-2026-04-10-003",
+        "published_at": "2026-04-10T08:00:00Z",
+        "target_date": "2026-04-10",
+        "world_id": "chronicle-sphere-42"
+      }
+    },
+    {
+      "headline": "Night-market radio host turns commute bulletins into citywide call-in ritual",
+      "summary": "A late-shift broadcaster has become a daily anchor for workers navigating rerouted transit lines.",
+      "body": "Listeners packed the switchboard for a fifth straight evening as host Miri Vale stitched traffic advisories together with neighborhood updates and verified service alerts. Vendors said the show has reduced confusion during recurring route detours by relaying practical stop-level guidance in plain language. Community groups are now proposing a volunteer bulletin desk to keep updates flowing during peak disruptions.",
+      "category": "human_interest",
+      "metadata": {
+        "story_id": "story-2026-04-10-004",
+        "published_at": "2026-04-10T08:00:00Z",
+        "target_date": "2026-04-10",
+        "world_id": "chronicle-sphere-42"
+      }
+    }
+  ]
+}

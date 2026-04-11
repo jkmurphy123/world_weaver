@@ -11,6 +11,9 @@ class MockLLMProvider(LLMProvider):
     """Local deterministic provider for tests and development."""
 
     def generate_json(self, request: PromptRequest) -> str:
+        if "News Reporter" in request.system_prompt:
+            return self._generate_story_batch(request)
+
         seed_prompt = request.user_prompt.strip() or "A synthetic coastal city balances power between guilds."
         world_name = _title_from_prompt(seed_prompt)
         slug = re.sub(r"[^a-z0-9]+", "-", world_name.lower()).strip("-") or "world-main"
@@ -102,6 +105,51 @@ class MockLLMProvider(LLMProvider):
         }
 
         return json.dumps(payload)
+
+    def _generate_story_batch(self, request: PromptRequest) -> str:
+        now = datetime.now(tz=timezone.utc)
+        categories = ["politics", "business", "science", "culture", "world"]
+
+        try:
+            input_payload = json.loads(request.user_prompt)
+        except json.JSONDecodeError:
+            input_payload = {}
+
+        target_date = str(input_payload.get("target_date", now.date().isoformat()))
+        story_count = int(input_payload.get("story_count", 4))
+        world_bible = input_payload.get("world_bible", {})
+        world_id = world_bible.get("world", {}).get("id", "world-main")
+        organizations = world_bible.get("organizations", [])
+        locations = world_bible.get("locations", [])
+        story_hooks = world_bible.get("story_hooks", [])
+
+        org_name = organizations[0]["name"] if organizations else "Civic Council"
+        location_name = locations[0]["name"] if locations else "Central District"
+        hook = story_hooks[0] if story_hooks else "A policy shift exposes new fault lines."
+
+        stories = []
+        for index in range(1, story_count + 1):
+            category = categories[(index - 1) % len(categories)]
+            story_id = f"story-{target_date}-{index:03d}"
+            stories.append(
+                {
+                    "headline": f"{org_name} announces changes across {location_name}",
+                    "summary": f"Officials and residents in {location_name} react to new directives.",
+                    "body": (
+                        f"{hook} Field reporting indicates unfolding consequences tied to "
+                        f"decision cycle {index}."
+                    ),
+                    "category": category,
+                    "metadata": {
+                        "story_id": story_id,
+                        "published_at": now.isoformat(),
+                        "target_date": target_date,
+                        "world_id": world_id,
+                    },
+                }
+            )
+
+        return json.dumps({"date": target_date, "stories": stories})
 
 
 def _title_from_prompt(seed_prompt: str) -> str:

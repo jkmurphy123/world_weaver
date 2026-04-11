@@ -20,6 +20,10 @@ def test_serve_help_works() -> None:
 
 def test_generate_news_command_persists_batch_by_date(tmp_path, monkeypatch) -> None:
     monkeypatch.setenv("NEWSROOM_DATA_DIR", str(tmp_path))
+    monkeypatch.setenv("NEWSROOM_LLM_PROVIDER", "mock")
+
+    init_result = runner.invoke(app, ["init-world", "--prompt", "A synthetic island city ruled by corporate blocs."])
+    assert init_result.exit_code == 0
 
     result = runner.invoke(app, ["generate-news", "--date", "2026-04-09"])
 
