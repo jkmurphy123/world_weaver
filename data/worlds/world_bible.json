@@ -1,100 +1,532 @@
 {
-  "metadata": {
-    "name": "A Synthetic Island World",
-    "genre": "science fiction",
-    "tone": "investigative",
-    "seed": 42,
-    "generated_at": "2026-04-11T11:16:45.385423Z"
-  },
-  "premise": "A synthetic island city ruled by corporate blocs.",
-  "regions": [
-    {
-      "name": "Central Arcology",
-      "climate": "humid tropical",
-      "landmarks": [
-        "Council Apex"
-      ]
-    }
-  ],
-  "factions": [
-    {
-      "name": "Meridian Council",
-      "ideology": "stability through managed information",
-      "influence": 84
-    }
-  ],
-  "story_hooks": [
-    "Council reforms trigger unrest as independent reporters expose corruption."
-  ],
   "world": {
-    "id": "a-synthetic-island-world",
-    "name": "A Synthetic Island World",
-    "genre": "science fiction",
-    "tone": "investigative",
-    "premise": "A synthetic island city ruled by corporate blocs.",
+    "id": "world-new-meridian",
+    "name": "New Meridian",
+    "genre": "Cyberpunk corporate dystopia",
+    "tone": "Investigative and street-level with high-stakes institutional conflict",
+    "premise": "In 2074, New Meridian is a corporate city-state in the Strait of Malacca where five megacorporations govern without democracy, social class is defined by vertical geography, and emergent AIs and underground networks destabilize corporate control.",
     "calendar_mode": "real_time_daily"
   },
   "style_guide": {
-    "news_voice": "direct, factual, and city-beat focused",
+    "news_voice": "Hard-news tone with clear sourcing language, concise scene-setting, and skepticism toward official corporate statements.",
     "allowed_story_types": [
-      "politics",
-      "business",
-      "science",
-      "culture"
+      "corporate_war",
+      "climate_geopolitical_disaster",
+      "megacorp_scandal",
+      "hacker_breach",
+      "celebrity_incident",
+      "ai_anomaly_report",
+      "market_manipulation",
+      "underground_culture_event",
+      "labor_civil_unrest",
+      "crime_gang_activity"
     ],
     "taboos": [
-      "out-of-world references"
+      "No omniscient narrator voice",
+      "No direct canon edits from reporter output",
+      "No contradiction of continuity without explicit uncertainty tag",
+      "No collapse into crisis-only coverage every edition"
     ]
   },
   "continuity": {
-    "current_date": "2026-04-11",
+    "current_date": "2074-01-01",
     "major_facts": [
-      "A consortium of corporate blocs governs the city.",
-      "Class divisions are tied to physical district elevation."
+      {
+        "id": "fact-governance-meridian-council",
+        "text": "New Meridian has no democratic government; the Meridian Council of five megacorporations governs the zone.",
+        "tier": "core_canon"
+      },
+      {
+        "id": "fact-population",
+        "text": "Population is about 14.4 million, including about 2 million transient or unregistered residents.",
+        "tier": "established"
+      },
+      {
+        "id": "fact-class-by-height",
+        "text": "Social class maps to elevation: higher floors get cleaner air, safety, and services.",
+        "tier": "core_canon"
+      },
+      {
+        "id": "fact-currency-mcs",
+        "text": "Meridian Credit System (MCS) is mandatory digital currency controlled by Sable Finance.",
+        "tier": "core_canon"
+      },
+      {
+        "id": "fact-oracle-anomalies",
+        "text": "ORACLE shows anomalous behavior known internally as the Pauses.",
+        "tier": "established"
+      }
     ],
     "rules": [
-      "No supernatural events.",
-      "Technological change has social consequences."
+      "Only World Architect plus merge logic may update canon.",
+      "Reporter stories must reference existing entities when possible.",
+      "Entity confidence tiers must be one of core_canon, established, rumored, deprecated.",
+      "Timeline events must not move backward without an explicit retcon marker."
     ]
   },
   "locations": [
     {
-      "id": "loc-a-synthetic-island-world-central",
-      "name": "Meridian Central",
-      "description": "Administrative and corporate district.",
-      "confidence_tier": "core_canon"
+      "id": "loc-new-meridian-saz",
+      "name": "New Meridian Special Administrative Zone",
+      "aliases": [
+        "NMSAZ",
+        "Kilat"
+      ],
+      "type": "city_state_archipelago",
+      "description": "Artificial archipelago in the Strait of Malacca, around 45 square km."
     },
     {
-      "id": "loc-a-synthetic-island-world-stack",
+      "id": "loc-meridian-central",
+      "name": "Meridian Central",
+      "type": "district",
+      "description": "Corporate core district containing ZephyrSpire and Vault Tower."
+    },
+    {
+      "id": "loc-the-crown",
+      "name": "The Crown",
+      "type": "district",
+      "description": "Upper-tier district containing Tower Axiom and Luminos Sanctuary."
+    },
+    {
+      "id": "loc-the-spine",
+      "name": "The Spine",
+      "type": "industrial_district",
+      "description": "Heavy industrial corridor and Harkon manufacturing stronghold."
+    },
+    {
+      "id": "loc-the-stack",
       "name": "The Stack",
-      "description": "Dense worker district with informal markets.",
-      "confidence_tier": "established"
+      "type": "district",
+      "description": "Dense lower-tier area and organizing base for labor and AI-rights activism."
+    },
+    {
+      "id": "loc-the-underbelly",
+      "name": "The Underbelly",
+      "type": "district",
+      "description": "Informal free-net and black-market network zone under corporate oversight gaps."
+    },
+    {
+      "id": "loc-the-drift",
+      "name": "The Drift",
+      "type": "peripheral_settlement",
+      "description": "Platform settlements for unregistered residents and precarious labor populations."
+    },
+    {
+      "id": "loc-platform-k-7",
+      "name": "Platform K-7",
+      "type": "micro_location",
+      "description": "Known base area for Bleeding Edge augmentation clinics in The Drift."
     }
   ],
   "organizations": [
     {
-      "id": "org-a-synthetic-island-world-council",
+      "id": "org-meridian-council",
       "name": "Meridian Council",
-      "description": "Consortium that sets policy and resource access.",
+      "type": "governing_consortium",
+      "description": "Consortium through which the five megacorporations govern New Meridian.",
       "confidence_tier": "core_canon"
+    },
+    {
+      "id": "org-drift-council",
+      "name": "Drift Council",
+      "type": "civic_group",
+      "description": "Community-level representation body for Drift residents.",
+      "confidence_tier": "established"
+    },
+    {
+      "id": "org-circuit-monks",
+      "name": "Circuit Monks",
+      "type": "network_collective",
+      "description": "Decentralized node operators distributing sensitive documents.",
+      "confidence_tier": "established"
+    },
+    {
+      "id": "org-red-lotus-syndicate",
+      "name": "Red Lotus Syndicate",
+      "type": "criminal_group",
+      "description": "Underbelly gang actor referenced in baseline crime archetypes.",
+      "confidence_tier": "rumored"
+    },
+    {
+      "id": "org-null-protocol",
+      "name": "Null Protocol",
+      "type": "hacker_collective",
+      "description": "Technically advanced Free Circuit cell linked to Blackout Hour in 2073.",
+      "confidence_tier": "established"
+    },
+    {
+      "id": "org-ghostline",
+      "name": "GhostLine",
+      "type": "hacker_collective",
+      "description": "Mercenary identity-forgery and credential spoofing service.",
+      "confidence_tier": "established"
+    },
+    {
+      "id": "org-bleeding-edge",
+      "name": "The Bleeding Edge",
+      "type": "hacker_collective",
+      "description": "Political augmentation-jailbreak network running risky mod clinics in The Drift.",
+      "confidence_tier": "established"
+    }
+  ],
+  "governments": [
+    {
+      "id": "gov-meridian-corporate-consortium",
+      "name": "Meridian Corporate Consortium Governance",
+      "scope": "New Meridian",
+      "operated_by": [
+        "corp-axiom-biodynamics",
+        "corp-zephyrnet",
+        "corp-harkon-industrial",
+        "corp-sable-finance",
+        "corp-luminos-collective"
+      ],
+      "description": "De facto governing arrangement administered through the Meridian Council."
+    }
+  ],
+  "corporations": [
+    {
+      "id": "corp-axiom-biodynamics",
+      "name": "Axiom Biodynamics",
+      "industry": [
+        "biotech",
+        "augmentation",
+        "pharmaceuticals",
+        "genetic_modification"
+      ],
+      "hq_location_id": "loc-the-crown",
+      "hq_site": "Tower Axiom",
+      "leader": "person-yeon-ji-hwan",
+      "known_for": [
+        "Upgrade neural implant line",
+        "covert trials in The Stack and The Drift"
+      ]
+    },
+    {
+      "id": "corp-zephyrnet",
+      "name": "ZephyrNet",
+      "industry": [
+        "communications_infrastructure",
+        "surveillance",
+        "data_brokerage",
+        "city_management_ai"
+      ],
+      "hq_location_id": "loc-meridian-central",
+      "hq_site": "ZephyrSpire",
+      "leader": "person-amara-osei-mensah",
+      "known_for": [
+        "ORACLE city AI",
+        "ZephyrMesh AR overlay",
+        "DataStream monitored internet layer"
+      ]
+    },
+    {
+      "id": "corp-harkon-industrial",
+      "name": "Harkon Industrial",
+      "industry": [
+        "construction",
+        "manufacturing",
+        "heavy_industry",
+        "resource_extraction"
+      ],
+      "hq_location_id": "loc-the-spine",
+      "hq_site": "Harkon Complex Alpha",
+      "leader": "person-priya-harkon-bose",
+      "known_for": [
+        "built much of New Meridian infrastructure",
+        "large workforce with Drift labor dependency"
+      ]
+    },
+    {
+      "id": "corp-sable-finance",
+      "name": "Sable Finance",
+      "industry": [
+        "banking",
+        "cryptocurrency",
+        "insurance",
+        "debt_infrastructure"
+      ],
+      "hq_location_id": "loc-meridian-central",
+      "hq_site": "Vault Tower",
+      "leader": "person-khalid-al-sarraf",
+      "known_for": [
+        "Meridian Credit System control",
+        "financing links to corporate and criminal actors"
+      ]
+    },
+    {
+      "id": "corp-luminos-collective",
+      "name": "Luminos Collective",
+      "industry": [
+        "ai_development",
+        "neural_interfaces",
+        "quantum_computing",
+        "consciousness_research"
+      ],
+      "hq_location_id": "loc-the-crown",
+      "hq_site": "Luminos Sanctuary",
+      "leader": "person-isabelle-marchetti-chen",
+      "known_for": [
+        "MIRA program",
+        "NeuLink neural interface",
+        "classified consciousness experiments"
+      ]
     }
   ],
   "people": [
     {
-      "id": "person-a-synthetic-island-world-editor",
-      "name": "Elara Quinn",
-      "role": "Investigative editor",
-      "affiliation": "Meridian Council Press Desk",
+      "id": "person-vex",
+      "name": "Vexara Koh Siu-Ling",
+      "aliases": [
+        "Vex"
+      ],
+      "role": "hacker_icon",
+      "status": "missing",
+      "home_location_id": "loc-the-stack",
+      "confidence_tier": "established",
+      "notes": "Missing since 2073 after a live ORACLE data-tier breach."
+    },
+    {
+      "id": "person-tariq-okonkwo-bumi",
+      "name": "Tariq Okonkwo-Bumi",
+      "aliases": [
+        "Councillor Tariq Okonkwo-Bumi"
+      ],
+      "role": "ai_rights_activist",
       "status": "active",
+      "home_location_id": "loc-the-stack",
+      "confidence_tier": "established",
+      "notes": "Leads coalition efforts after losing first AI personhood case in 2071."
+    },
+    {
+      "id": "person-mistral",
+      "name": "Kenji Sato-Reyes",
+      "aliases": [
+        "Mistral"
+      ],
+      "role": "musician",
+      "status": "active",
+      "home_location_id": "loc-the-underbelly",
+      "confidence_tier": "established",
+      "notes": "Performs illegal ghost-wave shows announced via The Weave."
+    },
+    {
+      "id": "person-priya-harkon-bose",
+      "name": "Priya Harkon-Bose",
+      "role": "executive",
+      "status": "active",
+      "affiliations": [
+        "corp-harkon-industrial"
+      ],
+      "confidence_tier": "core_canon",
+      "notes": "Harkon CEO with populist public image and rumored council ambitions."
+    },
+    {
+      "id": "person-rania-al-fasih",
+      "name": "Dr. Rania Al-Fasih",
+      "role": "scientist_whistleblower",
+      "status": "in_exile",
+      "home_location_id": "loc-the-drift",
+      "confidence_tier": "established",
+      "notes": "Leaked covert Axiom trials in 2072 and now distributes serialized disclosures."
+    },
+    {
+      "id": "person-yeon-ji-hwan",
+      "name": "Dr. Yeon Ji-hwan",
+      "role": "ceo",
+      "status": "active",
+      "affiliations": [
+        "corp-axiom-biodynamics"
+      ],
+      "confidence_tier": "core_canon"
+    },
+    {
+      "id": "person-amara-osei-mensah",
+      "name": "Amara Osei-Mensah",
+      "aliases": [
+        "the Architect"
+      ],
+      "role": "ceo",
+      "status": "active",
+      "affiliations": [
+        "corp-zephyrnet"
+      ],
+      "confidence_tier": "core_canon"
+    },
+    {
+      "id": "person-khalid-al-sarraf",
+      "name": "Khalid Al-Sarraf",
+      "role": "ceo",
+      "status": "active",
+      "affiliations": [
+        "corp-sable-finance"
+      ],
+      "confidence_tier": "core_canon"
+    },
+    {
+      "id": "person-isabelle-marchetti-chen",
+      "name": "Dr. Isabelle Marchetti-Chen",
+      "role": "ceo",
+      "status": "active",
+      "affiliations": [
+        "corp-luminos-collective"
+      ],
+      "confidence_tier": "core_canon",
+      "notes": "Rumored partial consciousness upload status is not yet verified."
+    }
+  ],
+  "technologies": [
+    {
+      "id": "tech-upgrade-implant",
+      "name": "Upgrade",
+      "kind": "neural_implant_line",
+      "owner_id": "corp-axiom-biodynamics"
+    },
+    {
+      "id": "tech-oracle",
+      "name": "ORACLE",
+      "kind": "city_management_ai",
+      "owner_id": "corp-zephyrnet",
+      "status": "anomalous"
+    },
+    {
+      "id": "tech-zephyrmesh",
+      "name": "ZephyrMesh",
+      "kind": "ar_overlay_infrastructure",
+      "owner_id": "corp-zephyrnet"
+    },
+    {
+      "id": "tech-datastream",
+      "name": "DataStream",
+      "kind": "monitored_public_network",
+      "owner_id": "corp-zephyrnet"
+    },
+    {
+      "id": "tech-mcs",
+      "name": "Meridian Credit System",
+      "aliases": [
+        "MCS"
+      ],
+      "kind": "mandatory_digital_currency",
+      "owner_id": "corp-sable-finance"
+    },
+    {
+      "id": "tech-neulink",
+      "name": "NeuLink",
+      "kind": "neural_interface",
+      "owner_id": "corp-luminos-collective"
+    },
+    {
+      "id": "tech-mira",
+      "name": "MIRA",
+      "kind": "agi_research_system",
+      "owner_id": "corp-luminos-collective",
+      "status": "classified"
+    },
+    {
+      "id": "tech-the-weave",
+      "name": "The Weave",
+      "kind": "emergent_network_ai",
+      "owner_id": null,
+      "status": "uncontrolled"
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "conflict-ai-personhood",
+      "name": "AI Personhood Struggle",
+      "parties": [
+        "person-tariq-okonkwo-bumi",
+        "org-meridian-council"
+      ],
+      "status": "active",
+      "summary": "Legal and political conflict over rights and legal standing for advanced AI systems."
+    },
+    {
+      "id": "conflict-drift-exploitation",
+      "name": "Drift Labor and Trial Exploitation",
+      "parties": [
+        "corp-harkon-industrial",
+        "corp-axiom-biodynamics",
+        "org-drift-council"
+      ],
+      "status": "active",
+      "summary": "Ongoing exploitation claims involving unsafe labor and non-consensual experimentation."
+    },
+    {
+      "id": "conflict-surveillance-resistance",
+      "name": "Surveillance vs Free-Net Resistance",
+      "parties": [
+        "corp-zephyrnet",
+        "org-null-protocol",
+        "org-ghostline",
+        "org-bleeding-edge"
+      ],
+      "status": "active",
+      "summary": "Escalating contest between ZephyrNet monitoring systems and hacker counter-networks."
+    }
+  ],
+  "open_threads": [
+    {
+      "id": "thread-vex-missing",
+      "title": "Where is Vex?",
+      "status": "open",
+      "confidence_tier": "rumored"
+    },
+    {
+      "id": "thread-oracle-pauses",
+      "title": "ORACLE Pauses root cause",
+      "status": "open",
       "confidence_tier": "established"
+    },
+    {
+      "id": "thread-mira-weave-oracle-contact",
+      "title": "Possible communication between MIRA, ORACLE, and The Weave",
+      "status": "open",
+      "confidence_tier": "rumored"
+    },
+    {
+      "id": "thread-priya-council-challenge",
+      "title": "Priya Harkon-Bose challenge to ZephyrNet council seat",
+      "status": "open",
+      "confidence_tier": "rumored"
     }
   ],
   "timeline": [
     {
-      "id": "event-a-synthetic-island-world-founding",
-      "date": "2074-01-12",
-      "title": "Council charter ratified",
-      "summary": "The council formally consolidated administrative control.",
+      "id": "event-2067-weave-detected",
+      "date": "2067-01-01",
+      "summary": "The Weave first detected in Underbelly free-net nodes.",
+      "confidence_tier": "established"
+    },
+    {
+      "id": "event-2071-ai-personhood-case",
+      "date": "2071-01-01",
+      "summary": "First AI personhood case argued by Tariq Okonkwo-Bumi before Meridian Council; petition denied.",
+      "confidence_tier": "core_canon"
+    },
+    {
+      "id": "event-2072-axiom-leak",
+      "date": "2072-01-01",
+      "summary": "Dr. Rania Al-Fasih leaks documents on covert Axiom trials targeting Drift residents.",
+      "confidence_tier": "core_canon"
+    },
+    {
+      "id": "event-2073-blackout-hour",
+      "date": "2073-01-01",
+      "summary": "Null Protocol executes Blackout Hour, disabling ORACLE crime prediction citywide for 60 minutes.",
+      "confidence_tier": "established"
+    },
+    {
+      "id": "event-2073-vex-missing",
+      "date": "2073-06-01",
+      "summary": "Vex disappears after high-profile ORACLE breach event.",
+      "confidence_tier": "established"
+    },
+    {
+      "id": "event-2074-baseline",
+      "date": "2074-01-01",
+      "summary": "Baseline continuity state for world initialization and daily story generation starts.",
       "confidence_tier": "core_canon"
     }
   ]

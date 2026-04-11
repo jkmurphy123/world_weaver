@@ -9,7 +9,9 @@ from world_weaver.config import get_settings
 from world_weaver.llm.factory import build_provider
 from world_weaver.services.init_world_service import InitWorldService
 from world_weaver.services.story_service import StoryService
+from world_weaver.services.world_bible_ingest_service import WorldBibleIngestService
 from world_weaver.services.world_generation import WorldGenerationService
+from world_weaver.storage.sqlite_world_store import SqliteWorldStore
 
 app = typer.Typer(help="World Weaver newsroom CLI")
 
@@ -72,6 +74,49 @@ def init_world(
     )
     typer.echo(f"Saved JSON: {json_path}")
     typer.echo(f"Saved markdown: {markdown_path}")
+
+
+@app.command("ingest-world-bible")
+def ingest_world_bible(
+    source_markdown: Path = typer.Option(
+        Path("data/world-bible.md"),
+        "--source-markdown",
+        help="Path to source world bible markdown",
+    ),
+    seed_json: Path = typer.Option(
+        Path("data/worlds/world_bible.seed.v1.json"),
+        "--seed-json",
+        help="Path to mapped world bible seed JSON",
+    ),
+    world_id: str | None = typer.Option(
+        None,
+        "--world-id",
+        help="Optional world ID override for database ingestion",
+    ),
+) -> None:
+    """Ingest an existing world bible markdown into canonical files and SQLite entities."""
+    settings = get_settings()
+    store = SqliteWorldStore(
+        db_path=settings.data_dir / settings.world_db_filename,
+        migrations_dir=Path(__file__).resolve().parent / "storage" / "migrations",
+    )
+    service = WorldBibleIngestService(
+        markdown_path=source_markdown,
+        seed_json_path=seed_json,
+        worlds_dir=settings.data_dir / "worlds",
+        world_store=store,
+    )
+    report = service.ingest(world_id_override=world_id)
+    typer.echo(f"Ingested world bible for world_id={report.world_id}")
+    typer.echo(f"Saved JSON: {report.world_bible_path}")
+    typer.echo(f"Saved markdown: {report.world_markdown_path}")
+    typer.echo(
+        "Upserted "
+        f"{report.factions_upserted} factions, "
+        f"{report.locations_upserted} locations, "
+        f"{report.characters_upserted} characters, "
+        f"{report.lore_upserted} lore entries."
+    )
 
 
 if __name__ == "__main__":
