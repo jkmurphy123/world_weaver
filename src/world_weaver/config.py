@@ -59,6 +59,7 @@ class Settings(BaseSettings):
     llm_provider: str = "mock"
     llm_model: str = "mock-world-architect-v1"
     openai_api_key: str | None = None
+    openai_timeout_seconds: int = 120
 
     model_config = SettingsConfigDict(env_prefix="NEWSROOM_", extra="ignore")
 

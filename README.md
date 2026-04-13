@@ -59,11 +59,14 @@ NEWSROOM_API_TOKEN=newsroom-dev-token
 NEWSROOM_DEFAULT_STORY_COUNT=4
 NEWSROOM_LLM_PROVIDER=mock
 NEWSROOM_LLM_MODEL=mock-world-architect-v1
+NEWSROOM_OPENAI_TIMEOUT_SECONDS=120
 NEWSROOM_OPENAI_API_KEY=
 OPENAI_API_KEY=
 ```
 
 `set-llm-provider` writes `NEWSROOM_LLM_PROVIDER` and `NEWSROOM_LLM_MODEL` into a local `.env` file. Process environment variables still override `.env` values when present.
+
+If OpenAI story generation times out on longer prompts or longer article bodies, raise `NEWSROOM_OPENAI_TIMEOUT_SECONDS`, for example `NEWSROOM_OPENAI_TIMEOUT_SECONDS=300`.
 
 ## API Endpoints (Current)
 

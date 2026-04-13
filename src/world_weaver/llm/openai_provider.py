@@ -18,17 +18,38 @@ class ConnectionStatus:
 class OpenAIProvider:
     """Minimal OpenAI Responses API client using stdlib HTTP."""
 
-    def __init__(self, *, api_key: str, base_url: str = "https://api.openai.com/v1") -> None:
+    def __init__(
+        self,
+        *,
+        api_key: str,
+        base_url: str = "https://api.openai.com/v1",
+        timeout_seconds: int = 120,
+    ) -> None:
         if not api_key:
             raise ValueError("OpenAI provider requires an API key")
         self._api_key = api_key
         self._base_url = base_url.rstrip("/")
+        self._timeout_seconds = timeout_seconds
 
     def generate_json(self, request_payload: PromptRequest) -> str:
         payload = {
             "model": request_payload.model,
             "instructions": request_payload.system_prompt,
-            "input": request_payload.user_prompt,
+            "input": [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "input_text",
+                            "text": "Return valid JSON only.",
+                        },
+                        {
+                            "type": "input_text",
+                            "text": request_payload.user_prompt,
+                        },
+                    ],
+                }
+            ],
             "text": {"format": {"type": "json_object"}},
         }
         response = self._request_json("POST", "/responses", payload=payload)
@@ -55,7 +76,7 @@ class OpenAIProvider:
         )
 
         try:
-            with request.urlopen(http_request, timeout=30) as response:
+            with request.urlopen(http_request, timeout=self._timeout_seconds) as response:
                 raw = response.read().decode("utf-8")
         except error.HTTPError as exc:
             detail = exc.read().decode("utf-8", errors="replace")

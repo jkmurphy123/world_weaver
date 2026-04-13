@@ -15,7 +15,10 @@ def build_provider(settings: Settings) -> LLMProvider:
             raise ValueError(
                 "OpenAI provider requires NEWSROOM_OPENAI_API_KEY or OPENAI_API_KEY to be set."
             )
-        return OpenAIProvider(api_key=settings.openai_api_key)
+        return OpenAIProvider(
+            api_key=settings.openai_api_key,
+            timeout_seconds=settings.openai_timeout_seconds,
+        )
     msg = (
         f"Unsupported LLM provider '{settings.llm_provider}'. "
         "Supported providers are: mock, openai."

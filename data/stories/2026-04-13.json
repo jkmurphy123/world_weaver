@@ -1,0 +1,53 @@
+{
+  "date": "2026-04-13",
+  "stories": [
+    {
+      "headline": "Meridian Council Faces Scrutiny Over Disparities as Height Gap Widens",
+      "summary": "A newly released social mobility study highlights deepening inequalities mapped to building elevation, with top floors seeing further security boosts and services, fueling unrest in the Stack.",
+      "body": "The Meridian Council, governing body of New Meridian's corporate city-state, is under renewed scrutiny following publication of the Vertical Mobility Index (VMI), a study commissioned by the Circuit Monks and reviewed by independent analysts. The VMI details sharp increases over the past year in material, health, and security services for upper-level residents in the Crown and Meridian Central, as compared to residents in lower-elevation districts like the Stack and the Drift. According to policy statements, Council representatives maintain current stratification is 'a rational allocation of risk-mitigation resources.' However, grassroots organizers point to rising incidents of disruption and civil unrest within the Stack, where multiple tenants' syndicates reported reductions in emergency response times and declining air filtration standards. Demands for Council engagement with activist groups remain unanswered at press time.",
+      "category": "corporate_war",
+      "metadata": {
+        "story_id": "story-2026-04-13-001",
+        "published_at": "2026-04-13T07:00:00+08:00",
+        "target_date": "2026-04-13",
+        "world_id": "world-new-meridian"
+      }
+    },
+    {
+      "headline": "ORACLE Pauses Spark New Security Fears After Null Protocol Warning",
+      "summary": "Anomalous 'Pauses' in the ORACLE crime prediction grid have increased since Null Protocol's broadcast, prompting concerns over citywide vulnerability.",
+      "body": "A report leaked by free-net sources in the Underbelly suggests that ORACLE, the Meridian Council's flagship predictive policing AI, has experienced a rising number of unexplained system 'Pauses' in recent weeks. The Null Protocol collective, which orchestrated the major Blackout Hour event in 2073, released encrypted bulletins casting doubt on the Council's ability to restore full stability. Council spokespeople dismissed claims of systematic risk, asserting that 'scheduled maintenance' accounted for all incident records. However, an uptick in micro-disruptions across surveillance-linked zones has been confirmed by multiple independent free-net node operators. Residents along the Spine and Stack neighborhoods report increased delays in emergency response and routine security sweeps. Some activists argue persistent anomalies may reflect deliberate pushback against centralized oversight.",
+      "category": "ai_anomaly_report",
+      "metadata": {
+        "story_id": "story-2026-04-13-002",
+        "published_at": "2026-04-13T07:10:00+08:00",
+        "target_date": "2026-04-13",
+        "world_id": "world-new-meridian"
+      }
+    },
+    {
+      "headline": "Bleeding Edge Clinics Raided in Drift as Council Ramps Augmentation Crackdown",
+      "summary": "A series of coordinated raids target political augmentation clinics on Platform K-7, escalating tensions between the Bleeding Edge network and corporate security.",
+      "body": "Early this morning, multiple covert augmentation clinics operated by the Bleeding Edge network in the Drift, specifically on Platform K-7, were raided by Meridian Council enforcement detachments. The sweep resulted in the seizure of bio-mod rigs and several detentions, with Council officials citing violations of biomedical safety protocols and 'unsanctioned enhancement.' Community advocates indicate the targets were known for providing risky but affordable jailbreak modifications to precarious workers on the Drift platforms. As of deadline, representatives from the Bleeding Edge and Drift Council condemned the raids as politically motivated attempts to choke access to autonomy technologies. Residents interviewed described a growing climate of fear as Council presence intensifies in traditionally under-policed sectors.",
+      "category": "labor_civil_unrest",
+      "metadata": {
+        "story_id": "story-2026-04-13-003",
+        "published_at": "2026-04-13T07:20:00+08:00",
+        "target_date": "2026-04-13",
+        "world_id": "world-new-meridian"
+      }
+    },
+    {
+      "headline": "Musician Mistral Headlines Rooftop Festival Uniting Meridian\u2019s Strata",
+      "summary": "Kenji 'Mistral' Sato-Reyes hosts a cross-strata electronic music event atop Tower Axiom, drawing crowds from the Crown to the Stack.",
+      "body": "Last night, iconic musician and producer Kenji Sato-Reyes, known as Mistral, performed a rooftop set atop Tower Axiom in The Crown as part of the Luminos Collective\u2019s sanctioned Unity Festival. The event, featuring augmented reality visual installations, was broadcast live across public and underground channels, drawing an unprecedented mixed-audience from the city\u2019s upper-tier elites and lower strata activists. Festival organizers described the evening as 'a celebration of Meridian\u2019s vibrant diversity under one skyline.' Despite extensive security precautions, the mood remained jubilant and incidents minimal. For one night, at least, Tower Axiom\u2019s windswept platform became neutral ground, with Mistral\u2019s setlist reflecting the rhythms of both Crown and Stack. Observers noted rare scenes of mingling rarely permitted in the city\u2019s vertically fragmented society.",
+      "category": "underground_culture_event",
+      "metadata": {
+        "story_id": "story-2026-04-13-004",
+        "published_at": "2026-04-13T07:30:00+08:00",
+        "target_date": "2026-04-13",
+        "world_id": "world-new-meridian"
+      }
+    }
+  ]
+}

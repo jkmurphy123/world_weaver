@@ -42,7 +42,16 @@ class StoryService:
                 Story(
                     headline=f"{faction} stirs tensions in {region}",
                     summary=f"{faction} intensifies pressure as events unfold in {region}.",
-                    body=f"{hook} Local sources report escalating consequences across {region}.",
+                    body=(
+                        f"{hook} Officials in {region} said the latest moves by {faction} "
+                        "shifted the day's political balance and forced local institutions to respond."
+                        "\n\n"
+                        f"Residents, trade groups, and civil agencies described a widening ripple effect across {region}, "
+                        "with transport plans, public messaging, and neighborhood routines all adjusting to the change."
+                        "\n\n"
+                        f"Analysts following {faction} said the immediate disruption may be manageable, "
+                        f"but the longer-term consequences could reshape alliances and public expectations throughout {region}."
+                    ),
                     category=category,
                     metadata=StoryMetadata(
                         story_id=story_id,

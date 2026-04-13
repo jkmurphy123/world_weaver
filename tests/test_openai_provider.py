@@ -3,7 +3,9 @@ from urllib import request
 
 import pytest
 
+from world_weaver.config import Settings
 from world_weaver.llm.base import PromptRequest
+from world_weaver.llm.factory import build_provider
 from world_weaver.llm.openai_provider import OpenAIProvider
 
 
@@ -57,7 +59,15 @@ def test_openai_provider_generate_json_extracts_response_text(monkeypatch) -> No
     request_body = json.loads(captured["body"])
     assert request_body["model"] == "gpt-4.1"
     assert request_body["instructions"] == "Return JSON"
-    assert request_body["input"] == '{"hello":"world"}'
+    assert request_body["input"] == [
+        {
+            "role": "user",
+            "content": [
+                {"type": "input_text", "text": "Return valid JSON only."},
+                {"type": "input_text", "text": '{"hello":"world"}'},
+            ],
+        }
+    ]
 
 
 def test_openai_provider_check_connection_calls_model_endpoint(monkeypatch) -> None:
@@ -80,3 +90,17 @@ def test_openai_provider_check_connection_calls_model_endpoint(monkeypatch) -> N
 def test_openai_provider_requires_api_key() -> None:
     with pytest.raises(ValueError, match="API key"):
         OpenAIProvider(api_key="")
+
+
+def test_build_provider_passes_configured_openai_timeout() -> None:
+    provider = build_provider(
+        Settings(
+            llm_provider="openai",
+            llm_model="gpt-4.1",
+            openai_api_key="test-key",
+            openai_timeout_seconds=300,
+        )
+    )
+
+    assert isinstance(provider, OpenAIProvider)
+    assert provider._timeout_seconds == 300

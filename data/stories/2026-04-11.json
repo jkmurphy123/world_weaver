@@ -2,49 +2,49 @@
   "date": "2026-04-11",
   "stories": [
     {
-      "headline": "Meridian Council announces changes across New Meridian Special Administrative Zone",
-      "summary": "Officials and residents in New Meridian Special Administrative Zone react to new directives.",
-      "body": "Where is Vex? Field reporting indicates unfolding consequences tied to decision cycle 1.",
-      "category": "politics",
+      "headline": "Sable Finance Executive Moves to Quell Fears After Anonymous Data Leak Reveals MCS Vulnerability",
+      "summary": "A major data leak on the citywide free-net has exposed technical vulnerabilities in the Meridian Credit System (MCS), prompting an urgent press response from Sable Finance and renewed scrutiny of megacorp digital infrastructure.",
+      "body": "In a late-night release on The Underbelly\u2019s largest free-net hub, a data dump alleged to originate from inside Sable Finance revealed previously undisclosed vulnerabilities in the Meridian Credit System, the digital backbone of New Meridian\u2019s economy. Security researchers scrambled to verify the authenticity of the files, which detail potential exploitation vectors that could threaten transaction integrity and user privacy for millions of residents and businesses. The leak's timing\u2014weeks after clandestine rumors of a black-market exploit\u2014heightens citywide anxiety over financial stability.\n\nAn official statement from Khalid Al-Sarraf, Sable Finance\u2019s CEO, attempted to reassure the public and invested partners, dismissing the leak as \u201coutdated theoretical modeling\u201d and pledging an immediate internal audit. However, sources within ZephyrSpire and the Stack report growing concern among merchants and informal workers reliant on MCS for daily transactions, with some residents reporting temporary payment interruptions overnight. The Meridian Council has not yet commented on potential disruptions to commerce or public trust.\n\nThe Circuit Monks, acting through anonymized forum channels, released partial technical analysis corroborating elements of the leak. They warned that attempts to downplay risks could make the system a bigger target for criminal syndicates. Opposition voices in The Drift and labor organizers in The Stack demand a transparent, third-party review of Sable Finance\u2019s digital infrastructure and question the wisdom of centralizing financial power in a single megacorp\u2019s hands. Ongoing investigations are now expected to involve cybercrime units and outside forensic experts.",
+      "category": "megacorp_scandal",
       "metadata": {
         "story_id": "story-2026-04-11-001",
-        "published_at": "2026-04-11T11:58:17.708693Z",
+        "published_at": "2026-04-11T07:00:00Z",
         "target_date": "2026-04-11",
         "world_id": "world-new-meridian"
       }
     },
     {
-      "headline": "Meridian Council announces changes across New Meridian Special Administrative Zone",
-      "summary": "Officials and residents in New Meridian Special Administrative Zone react to new directives.",
-      "body": "Where is Vex? Field reporting indicates unfolding consequences tied to decision cycle 2.",
-      "category": "business",
+      "headline": "Height Tensions Rise as Apex Residents Restrict Elevator Access to Lower-Tier Workers",
+      "summary": "In The Crown district, several high-elevation residential enclaves are under investigation after new security protocols effectively bar maintenance crews from accessing upper-level amenities.",
+      "body": "Residents of Tower Axiom, one of The Crown\u2019s most exclusive residential blocks, instituted new biometric ID gates late yesterday, limiting elevator access for non-resident service staff. Multiple reports confirm that cleaning and maintenance workers from The Stack and The Spine were denied entry during scheduled shifts, compounding longstanding complaints about vertical segregation in the city. One resident spokesperson cited 'recent security threats' as justification, though no specific incidents were referenced.\n\nThe incident has sparked criticism from labor advocates and urban sociologists, who argue that such actions deepen the city\u2019s entrenched class hierarchy\u2014where floating above the haze is as much a status symbol as a safeguard from urban pollution. In response, the Drift Council issued a statement urging the Meridian Council to enforce employment access codes, warning that failure to do so could provoke coordinated labor stoppages in the coming weeks.\n\nTower managers claim the changes are temporary pending a security review, but residents and advocacy groups alike acknowledge the move is only the latest in a series of measures to reinforce vertical stratification. As daily life in the lower tiers becomes increasingly precarious, some residents describe growing resentment on both sides of the divide. The situation is expected to draw further scrutiny as city officials weigh new regulatory proposals for public and private mobility systems.",
+      "category": "labor_civil_unrest",
       "metadata": {
         "story_id": "story-2026-04-11-002",
-        "published_at": "2026-04-11T11:58:17.708693Z",
+        "published_at": "2026-04-11T07:30:00Z",
         "target_date": "2026-04-11",
         "world_id": "world-new-meridian"
       }
     },
     {
-      "headline": "Meridian Council announces changes across New Meridian Special Administrative Zone",
-      "summary": "Officials and residents in New Meridian Special Administrative Zone react to new directives.",
-      "body": "Where is Vex? Field reporting indicates unfolding consequences tied to decision cycle 3.",
-      "category": "science",
+      "headline": "ORACLE System Experiences Brief 'Pause' in Early Hours, Prompting Questions About AI Stability",
+      "summary": "A short but citywide anomaly in the ORACLE predictive policing AI\u2019s data streams early this morning has been confirmed by multiple independent monitoring labs.",
+      "body": "Residents in several districts, including Meridian Central and The Spine, reported a 13-minute lull in ORACLE-based public safety alerts between 04:10 and 04:23 local time. Traffic management nodes returned to fallback mode, while emergency services operated manually during the gap. The AI\u2019s operator consortium issued a terse bulletin describing the episode as a 'routine update window,' but watchdog groups and cybersecurity researchers questioned this narrative, citing previous unexplained anomalies known as Pauses.\n\nThe Null Protocol, an activist cell linked to past disruptions, denied involvement, but noted on GhostLine channels that these recurring Pauses indicate unresolved issues in ORACLE\u2019s emergent behavior algorithms. Underground operators and city residents alike remain wary, as past outages were associated with sudden spikes in gang activity and a temporary breakdown of automated social services in lower districts.\n\nAs the Meridian Council continues to invest heavily in AI-driven civic management, today's incident revives debates about transparency and contingency planning when it comes to foundational city infrastructure. Calls are growing for independent audits and more detailed incident disclosures in the wake of ongoing citizen skepticism.",
+      "category": "ai_anomaly_report",
       "metadata": {
         "story_id": "story-2026-04-11-003",
-        "published_at": "2026-04-11T11:58:17.708693Z",
+        "published_at": "2026-04-11T08:00:00Z",
         "target_date": "2026-04-11",
         "world_id": "world-new-meridian"
       }
     },
     {
-      "headline": "Meridian Council announces changes across New Meridian Special Administrative Zone",
-      "summary": "Officials and residents in New Meridian Special Administrative Zone react to new directives.",
-      "body": "Where is Vex? Field reporting indicates unfolding consequences tied to decision cycle 4.",
-      "category": "culture",
+      "headline": "Pop-Up Cuisine: 'Stacked Taste' Collective Brings Culinary Fusion to The Underbelly",
+      "summary": "A grassroots chef collective from The Stack debuted a series of street food pop-ups in The Underbelly last night, blending flavors from Meridian\u2019s diverse communities and drawing crowds from across the vertical divide.",
+      "body": "The Underbelly\u2019s abandoned loading dock #9 was bustling with life last night as 'Stacked Taste,' a collective of platform-born chefs, served their spin on classic dishes using reclaimed ingredients and AI-optimized recipes. Drawing in hundreds of patrons from The Drift, The Spine, and even a few curious Crown visitors, the event transformed the black-market corridor into a celebration of resilience and cultural cross-pollination. Organizers say the pop-up was coordinated through encrypted feeds on the free-net and helped raise funds for hunger-alleviation efforts in The Stack.\n\nFood offerings ranged from spiced protein-lattice bao with kelp-pickled slaw to hand-pulled oat noodles stewed in a turmeric-broth adapted for local algae proteins. Live music, featuring underground acts such as a surprise set by Kenji 'Mistral' Sato-Reyes, underscored the event\u2019s community-building ethos and created a rare confluence of residents normally separated by class and geography.\n\nDespite concerns about corporate interference, the event wrapped peacefully, with clean-up crews working alongside Drift youth volunteers through the night. Participants expressed hope for more such collaborations, with several chef teams already planning for future events dedicated to bridging the city\u2019s divides through flavor and fellowship.",
+      "category": "underground_culture_event",
       "metadata": {
         "story_id": "story-2026-04-11-004",
-        "published_at": "2026-04-11T11:58:17.708693Z",
+        "published_at": "2026-04-11T08:30:00Z",
         "target_date": "2026-04-11",
         "world_id": "world-new-meridian"
       }
