@@ -20,6 +20,8 @@ class MockLLMProvider(LLMProvider):
 
     def generate_json(self, request: PromptRequest) -> str:
         normalized_prompt = request.system_prompt.lower()
+        if "operator-provided canon note" in normalized_prompt:
+            return self._generate_manual_canon_patch(request)
         if "canon update patch" in normalized_prompt:
             return self._generate_canon_patch(request)
         if "News Reporter" in request.system_prompt:
@@ -235,9 +237,113 @@ class MockLLMProvider(LLMProvider):
 
         return json.dumps(patch_payload)
 
+    def _generate_manual_canon_patch(self, request: PromptRequest) -> str:
+        now = datetime.now(tz=timezone.utc)
+
+        try:
+            input_payload = json.loads(request.user_prompt)
+        except json.JSONDecodeError:
+            input_payload = {}
+
+        target_date = str(input_payload.get("target_date", now.date().isoformat()))
+        source_text = str(input_payload.get("source_text", "")).strip()
+
+        org_name = _extract_named_phrase(source_text, pattern=r"(?:called|named)\s+([A-Z][A-Za-z0-9]+(?: [A-Z][A-Za-z0-9]+){0,4})")
+        if org_name is None and any(keyword in source_text.lower() for keyword in ("corporation", "company", "consortium")):
+            org_name = _extract_named_phrase(source_text, pattern=r"([A-Z][A-Za-z0-9]+(?: [A-Z][A-Za-z0-9]+){0,4})")
+
+        location_name = _extract_named_phrase(
+            source_text,
+            pattern=r"(?:in|at|from|based in|headquartered in)\s+([A-Z][A-Za-z0-9]+(?: [A-Z][A-Za-z0-9]+){0,4})",
+        )
+        person_name = _extract_named_phrase(
+            source_text,
+            pattern=r"(?:led by|run by|headed by)\s+([A-Z][a-z]+(?: [A-Z][a-z]+)+)",
+        )
+
+        title = source_text.split(".")[0].strip() if source_text else "Manual canon note ingested"
+        title = title[:80] if title else "Manual canon note ingested"
+
+        patch_payload = {
+            "date": target_date,
+            "new_people": [],
+            "updated_people": [],
+            "new_organizations": [],
+            "updated_organizations": [],
+            "new_locations": [],
+            "updated_locations": [],
+            "timeline_events": [
+                {
+                    "id": f"event-manual-{target_date}-001",
+                    "date": target_date,
+                    "title": title,
+                    "summary": source_text or "Operator note added to canon.",
+                    "confidence_tier": "established",
+                }
+            ],
+            "open_threads_added": [],
+            "open_threads_resolved": [],
+            "major_facts_added": [
+                {
+                    "id": f"fact-manual-{target_date}-001",
+                    "text": source_text or "Operator note added to canon.",
+                    "tier": "established",
+                }
+            ],
+            "continuity_warnings": [],
+        }
+
+        if org_name:
+            patch_payload["new_organizations"].append(
+                {
+                    "id": f"org-{_slugify(org_name)}",
+                    "name": org_name,
+                    "description": source_text or f"{org_name} is now part of canon.",
+                    "confidence_tier": "established",
+                }
+            )
+        if location_name:
+            patch_payload["new_locations"].append(
+                {
+                    "id": f"loc-{_slugify(location_name)}",
+                    "name": location_name,
+                    "description": f"Location referenced in operator note: {source_text}",
+                    "confidence_tier": "established",
+                }
+            )
+        if person_name:
+            patch_payload["new_people"].append(
+                {
+                    "id": f"person-{_slugify(person_name)}",
+                    "name": person_name,
+                    "role": "canon contributor note subject",
+                    "affiliation": org_name or "Independent",
+                    "status": "active",
+                    "confidence_tier": "established",
+                }
+            )
+
+        if not source_text:
+            patch_payload["timeline_events"] = []
+            patch_payload["major_facts_added"] = []
+
+        return json.dumps(patch_payload)
+
 
 def _title_from_prompt(seed_prompt: str) -> str:
     words = [word for word in re.findall(r"[A-Za-z0-9']+", seed_prompt) if word]
     if not words:
         return "New Meridian"
     return " ".join(words[:3]).title() + " World"
+
+
+def _extract_named_phrase(source_text: str, *, pattern: str) -> str | None:
+    match = re.search(pattern, source_text)
+    if not match:
+        return None
+    candidate = match.group(1).strip(" ,.;:")
+    return candidate or None
+
+
+def _slugify(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-") or "item"

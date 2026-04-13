@@ -1,6 +1,7 @@
-from datetime import date
+from datetime import date, datetime, timezone
 import json
 from pathlib import Path
+import re
 from typing import Any, Literal
 
 import typer
@@ -31,6 +32,10 @@ def _build_world_store(*, data_dir: Path, world_db_filename: str) -> SqliteWorld
         db_path=data_dir / world_db_filename,
         migrations_dir=Path(__file__).resolve().parent / "storage" / "migrations",
     )
+
+
+def _slugify(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-") or "note"
 
 
 @app.command()
@@ -127,6 +132,95 @@ def update_world(target_date: str = typer.Option(..., "--date", help="Date in YY
         f"timeline+={report.timeline_events_added}, "
         f"threads+={report.open_threads_added}, "
         f"threads_resolved={report.open_threads_resolved}, "
+        f"people+={report.people_added}/{report.people_updated} updated, "
+        f"orgs+={report.organizations_added}/{report.organizations_updated} updated, "
+        f"locations+={report.locations_added}/{report.locations_updated} updated."
+    )
+    if report.warnings:
+        typer.echo(f"Continuity warnings: {len(report.warnings)}")
+
+
+@app.command("add-canon")
+def add_canon(
+    text: str | None = typer.Option(None, "--text", help="Canon note text to merge into the world"),
+    text_file: Path | None = typer.Option(None, "--file", help="Path to a text file containing a canon note"),
+    target_date: str | None = typer.Option(None, "--date", help="Optional effective date in YYYY-MM-DD format"),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Generate and show the patch without mutating canon or SQLite"),
+) -> None:
+    """Merge an operator-provided canon note into the world bible."""
+    if bool(text) == bool(text_file):
+        raise typer.BadParameter("Provide exactly one of --text or --file")
+
+    settings = get_settings()
+    provider = build_provider(settings)
+    world_path = settings.data_dir / "worlds" / "world_bible.json"
+    story_service = StoryService(
+        settings.data_dir / "stories",
+        provider=provider,
+        prompts_dir=Path(__file__).resolve().parent / "prompts",
+    )
+    world_before = story_service.load_world_bible(world_path)
+    resolved_text = text if text is not None else text_file.read_text(encoding="utf-8")
+    if not resolved_text.strip():
+        raise typer.BadParameter("Canon note must not be empty")
+
+    effective_date = (
+        date.fromisoformat(target_date)
+        if target_date is not None
+        else (world_before.continuity.current_date if world_before.continuity is not None else datetime.now(timezone.utc).date())
+    )
+
+    patch_service = PatchService(
+        provider=provider,
+        prompts_dir=Path(__file__).resolve().parent / "prompts",
+        patches_dir=settings.data_dir / "patches",
+    )
+    patch = patch_service.generate_patch_from_note(
+        target_date=effective_date.isoformat(),
+        world_bible=world_before,
+        source_text=resolved_text,
+        model=settings.llm_model,
+    )
+
+    if dry_run:
+        typer.echo(json.dumps(patch.model_dump(mode="json"), indent=2))
+        return
+
+    note_slug = _slugify(resolved_text[:60])
+    patch_stem = f"manual-{effective_date.isoformat()}-{note_slug}"
+    patch_path = patch_service.save_patch(patch, filename_stem=patch_stem)
+
+    merge_service = MergeService(
+        worlds_dir=settings.data_dir / "worlds",
+        snapshots_dir=settings.data_dir / "snapshots",
+    )
+    world_after, report = merge_service.apply_patch(world_bible=world_before, patch=patch)
+    json_path, _ = merge_service.save_world(world_after)
+    WorldDbSyncService(
+        world_store=_build_world_store(data_dir=settings.data_dir, world_db_filename=settings.world_db_filename)
+    ).refresh_from_world_bible(world_after)
+    snapshot_path = merge_service.archive_run(
+        target_date=patch_stem,
+        world_before=world_before,
+        story_batch_payload={
+            "source": "manual_canon_note",
+            "date": effective_date.isoformat(),
+            "text": resolved_text,
+        },
+        patch=patch,
+        world_after=world_after,
+        merge_report=report,
+    )
+
+    typer.echo(
+        "Added canon note "
+        f"for {effective_date.isoformat()} at {json_path} "
+        f"(patch: {patch_path}, snapshot: {snapshot_path})"
+    )
+    typer.echo(
+        "Merge summary: "
+        f"timeline+={report.timeline_events_added}, "
+        f"threads+={report.open_threads_added}, "
         f"people+={report.people_added}/{report.people_updated} updated, "
         f"orgs+={report.organizations_added}/{report.organizations_updated} updated, "
         f"locations+={report.locations_added}/{report.locations_updated} updated."

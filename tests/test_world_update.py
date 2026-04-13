@@ -102,6 +102,70 @@ def test_patch_service_generates_valid_canon_update_patch(tmp_path) -> None:
     assert len(provider.requests) == 1
 
 
+def test_patch_service_generates_valid_patch_from_manual_note(tmp_path) -> None:
+    world = _build_world()
+    prompts_dir = tmp_path / "prompts"
+    prompts_dir.mkdir(parents=True, exist_ok=True)
+    (prompts_dir / "world_architect_manual_update.md").write_text(
+        "Given the current world bible and an operator-provided canon note, produce a canon update patch JSON.",
+        encoding="utf-8",
+    )
+    provider = _StubPatchProvider(
+        json.dumps(
+            {
+                "date": "2026-04-09",
+                "new_people": [
+                    {
+                        "id": "person-mara-voss",
+                        "name": "Mara Voss",
+                        "role": "Chief executive",
+                        "affiliation": "Helix Dynamics",
+                        "status": "active",
+                        "confidence_tier": "established",
+                    }
+                ],
+                "updated_people": [],
+                "new_organizations": [
+                    {
+                        "id": "org-helix-dynamics",
+                        "name": "Helix Dynamics",
+                        "description": "Orbital freight and predictive logistics corporation.",
+                        "confidence_tier": "established",
+                    }
+                ],
+                "updated_organizations": [],
+                "new_locations": [
+                    {
+                        "id": "loc-glass-harbor",
+                        "name": "Glass Harbor",
+                        "description": "A deep-water corporate port district.",
+                        "confidence_tier": "established",
+                    }
+                ],
+                "updated_locations": [],
+                "timeline_events": [],
+                "open_threads_added": [],
+                "open_threads_resolved": [],
+                "major_facts_added": [],
+                "continuity_warnings": [],
+            }
+        )
+    )
+    service = PatchService(provider=provider, prompts_dir=prompts_dir, patches_dir=tmp_path / "patches")
+
+    patch = service.generate_patch_from_note(
+        target_date="2026-04-09",
+        world_bible=world,
+        source_text="Add Helix Dynamics in Glass Harbor, led by Mara Voss.",
+        model="mock-world-architect-v1",
+    )
+
+    assert patch.date == date(2026, 4, 9)
+    assert patch.new_organizations[0].name == "Helix Dynamics"
+    assert patch.new_locations[0].name == "Glass Harbor"
+    assert patch.new_people[0].name == "Mara Voss"
+
+
 def test_merge_service_applies_patch_without_dropping_existing_canon(tmp_path) -> None:
     world = _build_world()
     patch = CanonUpdatePatch.model_validate(
@@ -180,3 +244,82 @@ def test_update_world_command_generates_patch_and_snapshot(tmp_path, monkeypatch
     assert updated_world["continuity"]["current_date"] == "2026-04-13"
     assert len(updated_world["timeline"]) >= 2
     assert len(updated_world["open_threads"]) >= 1
+
+
+def test_add_canon_command_merges_operator_note_and_refreshes_sqlite(tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("NEWSROOM_DATA_DIR", str(tmp_path))
+    monkeypatch.setenv("NEWSROOM_LLM_PROVIDER", "mock")
+
+    init_result = runner.invoke(app, ["init-world", "--prompt", "A synthetic island city ruled by corporate blocs."])
+    assert init_result.exit_code == 0
+
+    add_result = runner.invoke(
+        app,
+        [
+            "add-canon",
+            "--date",
+            "2026-04-14",
+            "--text",
+            "Add a corporation called Helix Dynamics in Glass Harbor, led by Mara Voss.",
+        ],
+    )
+
+    assert add_result.exit_code == 0
+    assert "Added canon note for 2026-04-14" in add_result.stdout
+    updated_world = json.loads((tmp_path / "worlds" / "world_bible.json").read_text(encoding="utf-8"))
+    organization_names = {org["name"] for org in updated_world["organizations"]}
+    people_names = {person["name"] for person in updated_world["people"]}
+    location_names = {loc["name"] for loc in updated_world["locations"]}
+    assert "Helix Dynamics" in organization_names
+    assert "Mara Voss" in people_names
+    assert "Glass Harbor" in location_names
+    assert (tmp_path / "patches").exists()
+
+    summary_result = runner.invoke(app, ["world-summary", "--output", "json"])
+    assert summary_result.exit_code == 0
+    payload = json.loads(summary_result.stdout)
+    assert payload["sqlite_entity_counts"] == {
+        "factions": 2,
+        "locations": 3,
+        "characters": 2,
+        "lore_entries": 5,
+    }
+
+
+def test_add_canon_dry_run_outputs_patch_without_mutating_files_or_sqlite(tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("NEWSROOM_DATA_DIR", str(tmp_path))
+    monkeypatch.setenv("NEWSROOM_LLM_PROVIDER", "mock")
+
+    init_result = runner.invoke(app, ["init-world", "--prompt", "A synthetic island city ruled by corporate blocs."])
+    assert init_result.exit_code == 0
+
+    world_before = json.loads((tmp_path / "worlds" / "world_bible.json").read_text(encoding="utf-8"))
+    summary_before = runner.invoke(app, ["world-summary", "--output", "json"])
+    assert summary_before.exit_code == 0
+    sqlite_before = json.loads(summary_before.stdout)["sqlite_entity_counts"]
+
+    dry_run_result = runner.invoke(
+        app,
+        [
+            "add-canon",
+            "--dry-run",
+            "--date",
+            "2026-04-14",
+            "--text",
+            "Add a corporation called Helix Dynamics in Glass Harbor, led by Mara Voss.",
+        ],
+    )
+
+    assert dry_run_result.exit_code == 0
+    patch_payload = json.loads(dry_run_result.stdout)
+    assert patch_payload["date"] == "2026-04-14"
+    assert patch_payload["new_organizations"][0]["name"] == "Helix Dynamics"
+
+    world_after = json.loads((tmp_path / "worlds" / "world_bible.json").read_text(encoding="utf-8"))
+    assert world_after == world_before
+    patches_dir = tmp_path / "patches"
+    assert not patches_dir.exists() or not any(patches_dir.iterdir())
+    summary_after = runner.invoke(app, ["world-summary", "--output", "json"])
+    assert summary_after.exit_code == 0
+    sqlite_after = json.loads(summary_after.stdout)["sqlite_entity_counts"]
+    assert sqlite_after == sqlite_before

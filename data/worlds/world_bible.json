@@ -56,7 +56,7 @@
     ]
   },
   "continuity": {
-    "current_date": "2026-04-10",
+    "current_date": "2026-04-13",
     "major_facts": [
       {
         "id": "fact-governance-meridian-council",
@@ -106,6 +106,36 @@
       {
         "id": "fact-2026-04-10-mcs-lockouts-unregistered",
         "text": "Unregistered residents on New Meridian's platform settlements face higher likelihood of MCS digital wallet lockouts, leading to new demands for system audit.",
+        "tier": "established"
+      },
+      {
+        "id": "fact-2026-04-11-mcs-vulnerabilities-leaked",
+        "text": "Previously undisclosed vulnerabilities in the Meridian Credit System were publicly leaked, increasing scrutiny and calls for external security audit.",
+        "tier": "established"
+      },
+      {
+        "id": "fact-2026-04-11-crown-limits-elevator-access",
+        "text": "Several high-level residences in The Crown, including Tower Axiom, have deployed biometric ID systems temporarily limiting elevator access for non-resident workers.",
+        "tier": "established"
+      },
+      {
+        "id": "fact-2026-04-12-sable-audit-council-friction",
+        "text": "April 2026 marked rare public friction within the Meridian Council, as several member corps pressured Sable Finance for internal access to address the perceived mishandling of recent ORACLE 'Pauses' and citywide economic disruptions.",
+        "tier": "established"
+      },
+      {
+        "id": "fact-2026-04-12-null-protocol-2026-campaign",
+        "text": "Null Protocol launched a public campaign for 'undetectable autonomy,' claiming responsibility for a wave of non-destructive digital security breaches targeting mid-tier corporate systems on April 12, 2026.",
+        "tier": "established"
+      },
+      {
+        "id": "fact-2026-04-13-vmi-height-gap-study",
+        "text": "The Vertical Mobility Index (VMI), a Circuit Monks-initiated study, documents increasing disparities in material conditions, health, and emergency services by building elevation, with stratification intensifying over the past year in New Meridian.",
+        "tier": "established"
+      },
+      {
+        "id": "fact-2026-04-13-oracle-pauses-increased-null-protocol",
+        "text": "The frequency of unexplained ORACLE system 'Pauses' has increased since Null Protocol's April 2074 broadcast and campaign, with city authorities and activists disputing the cause.",
         "tier": "established"
       }
     ],
@@ -164,6 +194,12 @@
       "name": "Platform K-7",
       "description": "Known base area for Bleeding Edge augmentation clinics in The Drift.",
       "confidence_tier": "established"
+    },
+    {
+      "id": "loc-underbelly-dock-9",
+      "name": "Loading Dock #9 (The Underbelly)",
+      "description": "Abandoned loading dock in The Underbelly, repurposed as a venue for underground cultural and food pop-up events, symbolizing community resilience and cross-tier collaboration.",
+      "confidence_tier": "established"
     }
   ],
   "organizations": [
@@ -208,8 +244,16 @@
       "name": "The Bleeding Edge",
       "description": "Political augmentation-jailbreak network running risky mod clinics in The Drift. Currently under sweeping enforcement crackdown by Meridian Council due to spike in mod-related injuries and rising political profile.",
       "confidence_tier": "established"
+    },
+    {
+      "id": "org-stacked-taste-collective",
+      "name": "Stacked Taste Collective",
+      "description": "Grassroots chef collective from The Stack, known for organizing street food pop-ups that cross community divides using reclaimed ingredients and AI-optimized recipes. Their events attract diverse participation and support local hunger-alleviation efforts.",
+      "confidence_tier": "established"
     }
   ],
+  "governments": [],
+  "corporations": [],
   "people": [
     {
       "id": "person-vex",
@@ -282,8 +326,18 @@
       "affiliation": "corp-luminos-collective",
       "status": "active",
       "confidence_tier": "core_canon"
+    },
+    {
+      "id": "person-kite",
+      "name": "Kite",
+      "role": "graffiti_runner",
+      "affiliation": "Independent",
+      "status": "active",
+      "confidence_tier": "rumored"
     }
   ],
+  "technologies": [],
+  "conflicts": [],
   "open_threads": [
     {
       "id": "thread-vex-missing",
@@ -354,6 +408,55 @@
       "description": "Leaked documents spark allegations that Axiom BioDynamics is renewing unauthorized research in The Drift, reviving fears of exploitation among marginal residents.",
       "status": "open",
       "confidence_tier": "rumored"
+    },
+    {
+      "id": "thread-2026-04-11-mcs-leak-audit-demand",
+      "title": "Demand for third-party audit of MCS after vulnerability leak",
+      "description": "Following a new leak of internal Sable Finance data exposing Meridian Credit System vulnerabilities, labor and civil groups call for an independent, citywide audit of the infrastructure underpinning MCS digital payments.",
+      "status": "open",
+      "confidence_tier": "established"
+    },
+    {
+      "id": "thread-2026-04-11-vertical-access-crisis",
+      "title": "Labor unrest over restricted mobility in The Crown",
+      "description": "Labor organizers and the Drift Council threaten coordinated action after Tower Axiom and other Crown enclaves implement new access barriers against lower-tier workers. How will the Meridian Council address pressures for fair mobility and employment access?",
+      "status": "open",
+      "confidence_tier": "established"
+    },
+    {
+      "id": "thread-2026-04-12-council-rift-sable",
+      "title": "Council Tensions Over Sable Audit",
+      "description": "Unprecedented friction visible among Meridian Council corps as multiple factions demand internal data access at Sable Finance following market fallout from ORACLE 'Pauses.' Will this trigger further power struggle?",
+      "status": "open",
+      "confidence_tier": "rumored"
+    },
+    {
+      "id": "thread-2026-04-12-null-protocol-campaign",
+      "title": "Null Protocol's 'Undetectable Autonomy' Campaign",
+      "description": "What escalations or countermeasures will follow Null Protocol\u2019s new wave of security breaches and the manifesto challenging ORACLE\u2019s predictive reach?",
+      "status": "open",
+      "confidence_tier": "established"
+    },
+    {
+      "id": "thread-2026-04-12-drift-healthcare-gap",
+      "title": "Drift Healthcare Gap After Bleeding Edge Raids",
+      "description": "With new Council raids against Bleeding Edge clinics, how will Drift and Underbelly residents access safe augmentations? Will the crackdown fuel further conflict or adaptations?",
+      "status": "open",
+      "confidence_tier": "established"
+    },
+    {
+      "id": "thread-2026-04-12-kite-identity-and-impact",
+      "title": "Kite's Murals and Underground Influence",
+      "description": "Who is Kite, and how will Council authorities respond to the spread of subversive murals and their impact on protest discourse?",
+      "status": "open",
+      "confidence_tier": "rumored"
+    },
+    {
+      "id": "thread-2026-04-13-vmi-study-impact",
+      "title": "Impact of the Vertical Mobility Index on Council Policy",
+      "description": "Will the public release of the Vertical Mobility Index (VMI) spur the Meridian Council to address height-based inequality and unrest in lower districts, or will stratification worsen?",
+      "status": "open",
+      "confidence_tier": "established"
     }
   ],
   "timeline": [
@@ -411,6 +514,90 @@
       "date": "2026-04-10",
       "title": "Citywide unrest in The Stack after new ORACLE Pauses",
       "summary": "A spike in 'Pauses' by the city's ORACLE predictive system triggered protests and unrest in The Stack. Grassroots organizers launched analog safety patrols as community trust in the system eroded, while the Meridian Council promised a technical audit. Demands are mounting for independent oversight and investigation into systemic bias in ORACLE's operations.",
+      "confidence_tier": "established"
+    },
+    {
+      "id": "event-2026-04-11-crown-elevator-restrictions",
+      "date": "2026-04-11",
+      "title": "Apex Residents Restrict Elevator Access in The Crown",
+      "summary": "Tower Axiom residents in The Crown deployed new biometric gates, temporarily limiting elevator access for non-resident workers, reigniting controversy over vertical class segregation and employment access. Labor advocates and the Drift Council warn of potential labor actions.",
+      "confidence_tier": "established"
+    },
+    {
+      "id": "event-2026-04-11-mcs-vulnerability-leak",
+      "date": "2026-04-11",
+      "title": "MCS Data Leak Exposes System Vulnerabilities",
+      "summary": "A major leak on the Underbelly's free-net revealed technical vulnerabilities in the Meridian Credit System (MCS). Sable Finance pledged an internal audit, while calls rise for a transparent third-party review. Circuit Monks corroborated elements of the leak, sparking citywide concern over financial stability.",
+      "confidence_tier": "established"
+    },
+    {
+      "id": "event-2026-04-11-oracle-pause-morning",
+      "date": "2026-04-11",
+      "title": "Brief ORACLE 'Pause' Causes Operational Outage Citywide",
+      "summary": "A 13-minute system anomaly caused ORACLE-based alerts and automated services to cease in multiple districts. Official statements claim a routine update, but watchdogs dispute this, highlighting unresolved stability issues and fueling debate over AI transparency.",
+      "confidence_tier": "established"
+    },
+    {
+      "id": "event-2026-04-11-underbelly-popup-stacked-taste",
+      "date": "2026-04-11",
+      "title": "'Stacked Taste' Chef Collective Hosts Pop-Up in The Underbelly",
+      "summary": "The Stacked Taste Collective organized a major street food pop-up at Loading Dock #9, drawing cross-class crowds and raising funds for hunger relief in The Stack. The event was marked by community collaboration and peaceful celebration.",
+      "confidence_tier": "established"
+    },
+    {
+      "id": "event-2026-04-12-bleeding-edge-drift-crackdown",
+      "date": "2026-04-12",
+      "title": "Bleeding Edge Clinics Raided After Mod Incident in The Drift",
+      "summary": "Council enforcement raided facilities linked to Bleeding Edge on Platform K-7 in response to a high-profile botched augmentation causing critical injury. This escalated the ongoing crackdown on unregistered mod clinics and deepened local divides over healthcare access.",
+      "confidence_tier": "established"
+    },
+    {
+      "id": "event-2026-04-12-kite-graffiti-chronicle",
+      "date": "2026-04-12",
+      "title": "Kite's Graffiti Murals Chronicle Street-Level Mobility",
+      "summary": "A series of viral graffiti murals by an anonymous runner known as 'Kite' appeared from The Spine to Luminos Sanctuary, sparking conversations about class mobility and creative protest. Council increased security patrols in affected corridors.",
+      "confidence_tier": "established"
+    },
+    {
+      "id": "event-2026-04-12-null-protocol-manifesto",
+      "date": "2026-04-12",
+      "title": "Null Protocol Claims Security Breaches, Issues Manifesto",
+      "summary": "Null Protocol took responsibility for targeted intrusions on mid-elevation corporate systems, releasing a public manifesto urging resistance to ORACLE's predictive control. Several elevator systems were disrupted, but core infrastructure remained uncompromised.",
+      "confidence_tier": "established"
+    },
+    {
+      "id": "event-2026-04-12-sable-finance-audit-oracle-pause",
+      "date": "2026-04-12",
+      "title": "Sable Finance Faces Council Audit After ORACLE 'Pauses'",
+      "summary": "Sable Finance was placed under formal investigation by auditing teams from three Meridian Council corporations in response to a series of unexplained 'Pauses' in the ORACLE system, leading to market instability and increased transaction delays citywide.",
+      "confidence_tier": "established"
+    },
+    {
+      "id": "event-2026-04-13-bleeding-edge-raids-expanded",
+      "date": "2026-04-13",
+      "title": "Bleeding Edge Clinics Raided on Platform K-7 as Mod Crackdown Escalates",
+      "summary": "Council enforcement launched another coordinated raid on Bleeding Edge augmentation clinics on Platform K-7, leading to the seizure of equipment and several detentions. Community and Drift Council advocates warn this will deepen fear and restrict access for precarious laborers, escalating tensions with the governing authorities.",
+      "confidence_tier": "established"
+    },
+    {
+      "id": "event-2026-04-13-mistral-unity-fest",
+      "date": "2026-04-13",
+      "title": "Mistral Headlines Unity Festival on Tower Axiom, Bridging Social Tiers",
+      "summary": "Kenji 'Mistral' Sato-Reyes performed atop Tower Axiom in The Crown during the Luminos Collective\u2019s Unity Festival. The rooftop event, featuring AR installations and live broadcasts, drew crowds from upper and lower tiers. The rare mingling of elites and activists was characterized as a symbolic celebration of citywide diversity. Security was present, but incidents were minimal.",
+      "confidence_tier": "established"
+    },
+    {
+      "id": "event-2026-04-13-oracle-pauses-after-null-protocol",
+      "date": "2026-04-13",
+      "title": "Increase in ORACLE 'Pauses' Following Null Protocol Broadcast",
+      "summary": "Leaked Underbelly reports indicate an uptick in unexplained ORACLE system 'Pauses' since Null Protocol's latest campaign. Council officials claim maintenance is the cause, but node operators and residents from the Spine and Stack confirm more frequent disruptions in both emergency and routine security. Debate grows over the roots of persistent AI anomalies.",
+      "confidence_tier": "established"
+    },
+    {
+      "id": "event-2026-04-13-vmi-height-gap",
+      "date": "2026-04-13",
+      "title": "Vertical Mobility Index Highlights Increasing Elevation-Based Inequality",
+      "summary": "A study initiated by the Circuit Monks and reviewed by independent analysts, the Vertical Mobility Index (VMI), reports mounting inequality correlated with building elevation. Upper-level residents in The Crown and Meridian Central receive expanded security and services, while The Stack and Drift see declining emergency response and air quality. This has fueled renewed unrest in lower tiers.",
       "confidence_tier": "established"
     },
     {

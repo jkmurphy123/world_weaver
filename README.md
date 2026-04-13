@@ -30,6 +30,14 @@ newsroom init-world --prompt-file ./seed_prompt.txt
 # Generate one daily story batch
 newsroom generate-news --date 2026-04-13
 
+# Merge a day's published stories back into canon
+newsroom update-world --date 2026-04-13
+
+# Add your own canon note as text or from a file
+newsroom add-canon --text "Add a corporation called Helix Dynamics in Glass Harbor, led by Mara Voss."
+newsroom add-canon --file ./canon_note.txt --date 2026-04-14
+newsroom add-canon --dry-run --text "Add a corporation called Helix Dynamics in Glass Harbor, led by Mara Voss."
+
 # Persist the selected LLM provider/model for this repo
 newsroom set-llm-provider --provider mock
 newsroom set-llm-provider --provider openai --model gpt-4.1
@@ -62,7 +70,8 @@ NEWSROOM_API_TOKEN=newsroom-dev-token
 NEWSROOM_DEFAULT_STORY_COUNT=4
 NEWSROOM_LLM_PROVIDER=mock
 NEWSROOM_LLM_MODEL=mock-world-architect-v1
-NEWSROOM_OPENAI_TIMEOUT_SECONDS=120NEWSROOM_OPENAI_API_KEY=
+NEWSROOM_OPENAI_TIMEOUT_SECONDS=120
+NEWSROOM_OPENAI_API_KEY=
 OPENAI_API_KEY=
 ```
 
@@ -97,6 +106,8 @@ Requires bearer token (`Authorization: Bearer $NEWSROOM_API_TOKEN`):
 source .venv/bin/activate
 newsroom init-world --prompt "A dense floating city ruled by data cartels."
 newsroom generate-news --date 2026-04-11
+newsroom update-world --date 2026-04-11
+newsroom add-canon --text "Add a new harbor district controlled by an independent freight syndicate."
 newsroom serve
 ```
 
@@ -106,9 +117,3 @@ Then verify:
 - `http://127.0.0.1:8000/stories/latest`
 - `http://127.0.0.1:8000/feed/rss.xml`
 - `http://127.0.0.1:8000/feed/atom.xml`
-
-
-#updating after news generation
-
-  newsroom generate-news --date 2026-04-13
-  newsroom update-world --date 2026-04-13
