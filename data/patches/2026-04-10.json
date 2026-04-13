@@ -1,0 +1,79 @@
+{
+  "date": "2026-04-10",
+  "new_people": [],
+  "updated_people": [],
+  "new_organizations": [],
+  "updated_organizations": [],
+  "new_locations": [],
+  "updated_locations": [],
+  "timeline_events": [
+    {
+      "id": "event-2026-04-10-stack-unrest-oracle-pauses",
+      "date": "2026-04-10",
+      "title": "Citywide unrest in The Stack after new ORACLE Pauses",
+      "summary": "A spike in 'Pauses' by the city's ORACLE predictive system triggered protests and unrest in The Stack. Grassroots organizers launched analog safety patrols as community trust in the system eroded, while the Meridian Council promised a technical audit. Demands are mounting for independent oversight and investigation into systemic bias in ORACLE's operations.",
+      "confidence_tier": "established"
+    },
+    {
+      "id": "event-2026-04-10-mcs-k7-lockouts",
+      "date": "2026-04-10",
+      "title": "MCS account lockouts hit unregistered laborers on Platform K-7",
+      "summary": "Unregistered workers on Platform K-7 face widespread Meridian Credit System wallet freezes, sparking accusations of digital exclusion. Sable Finance denies bias, but Drift Council and civil society groups demand a third-party audit. GhostLine reports increased requests for identity-forgery services.",
+      "confidence_tier": "established"
+    },
+    {
+      "id": "event-2026-04-10-axiom-leak-drift-research",
+      "date": "2026-04-10",
+      "title": "Circuit Monks leak documents alleging renewed Axiom BioDynamics research in The Drift",
+      "summary": "Leaked documents, circulated by Circuit Monks, purport to show Axiom BioDynamics planning new biological trials among Drift platform residents. The corporation denies the allegations, but the Drift Council seeks urgent hearings. Critics highlight ongoing community vulnerability to covert research.",
+      "confidence_tier": "rumored"
+    },
+    {
+      "id": "event-2026-04-10-mistral-crown-rooftop-concert",
+      "date": "2026-04-10",
+      "title": "Mistral stages spontaneous rooftop concert bridging class lines in The Crown",
+      "summary": "Kenji 'Mistral' Sato-Reyes performed a surprise, unauthorized rooftop show in The Crown, attracting an unusually diverse audience. Security allowed the peaceful conclusion of the event, which galvanized calls for less restrictive public spaces.",
+      "confidence_tier": "established"
+    }
+  ],
+  "open_threads_added": [
+    {
+      "id": "thread-2026-04-10-oracle-bias-oversight",
+      "title": "Demands for independent oversight of ORACLE systemic bias",
+      "description": "Activists and community groups in The Stack call for an independent board to investigate whether ORACLE Pauses and disruptions disproportionately impact lower-tier districts.",
+      "status": "open",
+      "confidence_tier": "rumored"
+    },
+    {
+      "id": "thread-2026-04-10-mcs-discrimination-audit",
+      "title": "Audit of Meridian Credit System for digital discrimination",
+      "description": "Civil groups and the Drift Council press for a third-party audit following widespread MCS lockouts of unregistered laborers on Platform K-7.",
+      "status": "open",
+      "confidence_tier": "established"
+    },
+    {
+      "id": "thread-2026-04-10-axiom-renewed-drift-research",
+      "title": "Is Axiom BioDynamics resuming covert Drift trials?",
+      "description": "Leaked documents spark allegations that Axiom BioDynamics is renewing unauthorized research in The Drift, reviving fears of exploitation among marginal residents.",
+      "status": "open",
+      "confidence_tier": "rumored"
+    }
+  ],
+  "open_threads_resolved": [],
+  "major_facts_added": [
+    {
+      "id": "fact-2026-04-10-oracle-pauses-trigger-unrest",
+      "text": "Repeated ORACLE system 'Pauses' are leading to civil unrest and protests in lower-tier districts such as The Stack.",
+      "tier": "established"
+    },
+    {
+      "id": "fact-2026-04-10-mcs-lockouts-unregistered",
+      "text": "Unregistered residents on New Meridian's platform settlements face higher likelihood of MCS digital wallet lockouts, leading to new demands for system audit.",
+      "tier": "established"
+    }
+  ],
+  "continuity_warnings": [
+    "Uncertainty remains over whether Axiom BioDynamics has actually resumed covert research in The Drift following the new Circuit Monks leak.",
+    "It is not yet fully established if ORACLE system 'Pauses' reflect technical malfunction, targeted bias, or emergent AI behavior. Conflicting statements persist between activists and the Meridian Council."
+  ]
+}

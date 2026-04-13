@@ -122,6 +122,37 @@ class TimelineEvent(BaseModel):
         return payload
 
 
+class OpenThread(BaseModel):
+    id: str
+    title: str
+    description: str
+    status: str = "open"
+    confidence_tier: ConfidenceTier = "established"
+
+    @model_validator(mode="before")
+    @classmethod
+    def _normalize_legacy_open_thread(cls, value: Any) -> Any:
+        if not isinstance(value, dict):
+            return value
+
+        payload = dict(value)
+        if not payload.get("title"):
+            title = payload.get("name") or payload.get("summary") or payload.get("text") or payload.get("id")
+            if isinstance(title, str) and title.strip():
+                payload["title"] = title.strip()
+            else:
+                payload["title"] = "Untitled Thread"
+
+        if not payload.get("description"):
+            description = payload.get("summary") or payload.get("text") or payload.get("title")
+            if isinstance(description, str) and description.strip():
+                payload["description"] = description.strip()
+            else:
+                payload["description"] = payload["title"]
+
+        return payload
+
+
 class WorldBible(BaseModel):
     metadata: WorldMetadata | None = None
     premise: str | None = None
@@ -134,7 +165,12 @@ class WorldBible(BaseModel):
     continuity: Continuity | None = None
     locations: list[CanonLocation] = Field(default_factory=list)
     organizations: list[CanonOrganization] = Field(default_factory=list)
+    governments: list[dict[str, Any]] = Field(default_factory=list)
+    corporations: list[dict[str, Any]] = Field(default_factory=list)
     people: list[CanonPerson] = Field(default_factory=list)
+    technologies: list[dict[str, Any]] = Field(default_factory=list)
+    conflicts: list[dict[str, Any]] = Field(default_factory=list)
+    open_threads: list[OpenThread] = Field(default_factory=list)
     timeline: list[TimelineEvent] = Field(default_factory=list)
 
     @model_validator(mode="before")
@@ -332,8 +368,25 @@ class Story(BaseModel):
     body: str = Field(min_length=1)
     category: str = Field(min_length=1)
     metadata: StoryMetadata
+    referenced_entities: list[str] = Field(default_factory=list)
+    continuity_effects: list[str] = Field(default_factory=list)
 
 
 class StoryBatch(BaseModel):
     date: date
     stories: list[Story] = Field(min_length=1)
+
+
+class CanonUpdatePatch(BaseModel):
+    date: date
+    new_people: list[CanonPerson] = Field(default_factory=list)
+    updated_people: list[CanonPerson] = Field(default_factory=list)
+    new_organizations: list[CanonOrganization] = Field(default_factory=list)
+    updated_organizations: list[CanonOrganization] = Field(default_factory=list)
+    new_locations: list[CanonLocation] = Field(default_factory=list)
+    updated_locations: list[CanonLocation] = Field(default_factory=list)
+    timeline_events: list[TimelineEvent] = Field(default_factory=list)
+    open_threads_added: list[OpenThread] = Field(default_factory=list)
+    open_threads_resolved: list[str] = Field(default_factory=list)
+    major_facts_added: list[ContinuityFact] = Field(default_factory=list)
+    continuity_warnings: list[str] = Field(default_factory=list)

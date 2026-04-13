@@ -19,6 +19,9 @@ class MockLLMProvider(LLMProvider):
     """Local deterministic provider for tests and development."""
 
     def generate_json(self, request: PromptRequest) -> str:
+        normalized_prompt = request.system_prompt.lower()
+        if "canon update patch" in normalized_prompt:
+            return self._generate_canon_patch(request)
         if "News Reporter" in request.system_prompt:
             return self._generate_story_batch(request)
 
@@ -155,6 +158,11 @@ class MockLLMProvider(LLMProvider):
                         f"decision cycle {index}."
                     ),
                     "category": category,
+                    "referenced_entities": [org_name, location_name],
+                    "continuity_effects": [
+                        f"{org_name} introduced a durable policy change affecting {location_name}.",
+                        f"Public reaction in {location_name} suggests the fallout may drive more coverage.",
+                    ],
                     "metadata": {
                         "story_id": story_id,
                         "published_at": now.isoformat(),
@@ -165,6 +173,67 @@ class MockLLMProvider(LLMProvider):
             )
 
         return json.dumps({"date": target_date, "stories": stories})
+
+    def _generate_canon_patch(self, request: PromptRequest) -> str:
+        now = datetime.now(tz=timezone.utc)
+
+        try:
+            input_payload = json.loads(request.user_prompt)
+        except json.JSONDecodeError:
+            input_payload = {}
+
+        target_date = str(input_payload.get("target_date", now.date().isoformat()))
+        story_batch = input_payload.get("story_batch", {})
+        stories = story_batch.get("stories", []) if isinstance(story_batch, dict) else []
+        world_bible = input_payload.get("world_bible", {}) if isinstance(input_payload, dict) else {}
+        open_threads = world_bible.get("open_threads", []) if isinstance(world_bible, dict) else []
+
+        first_story = stories[0] if stories else {}
+        headline = str(first_story.get("headline", "City desk tracks a developing shift"))
+        summary = str(first_story.get("summary", "A consequential development is unfolding."))
+        continuity_effects = first_story.get("continuity_effects", [])
+        first_effect = (
+            str(continuity_effects[0])
+            if isinstance(continuity_effects, list) and continuity_effects and isinstance(continuity_effects[0], str)
+            else summary
+        )
+
+        patch_payload = {
+            "date": target_date,
+            "new_people": [],
+            "updated_people": [],
+            "new_organizations": [],
+            "updated_organizations": [],
+            "new_locations": [],
+            "updated_locations": [],
+            "timeline_events": [
+                {
+                    "id": f"event-{target_date}-001",
+                    "date": target_date,
+                    "title": headline,
+                    "summary": summary,
+                    "confidence_tier": "established",
+                }
+            ],
+            "open_threads_added": [
+                {
+                    "id": f"thread-{target_date}-001",
+                    "title": f"Follow-up: {headline[:60]}",
+                    "description": first_effect,
+                    "status": "open",
+                    "confidence_tier": "established",
+                }
+            ],
+            "open_threads_resolved": [
+                thread.get("id")
+                for thread in open_threads
+                if isinstance(thread, dict) and thread.get("status") == "resolved"
+            ],
+            "major_facts_added": [],
+            "continuity_warnings": [],
+        }
+
+        return json.dumps(patch_payload)
 
 
 def _title_from_prompt(seed_prompt: str) -> str:

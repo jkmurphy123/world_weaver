@@ -59,6 +59,11 @@ class StoryService:
                         target_date=target_date,
                         world_id=f"{world_bible.metadata.name.lower().replace(' ', '-')}-{world_bible.metadata.seed}",
                     ),
+                    referenced_entities=[faction, region],
+                    continuity_effects=[
+                        f"{faction} escalated a consequential dispute in {region}.",
+                        f"Authorities in {region} are still assessing the longer-term impact of the latest move by {faction}.",
+                    ],
                 )
             )
 

@@ -10,7 +10,10 @@ from world_weaver.app import create_app
 from world_weaver.config import get_settings, update_settings_file
 from world_weaver.llm.factory import build_provider
 from world_weaver.services.init_world_service import InitWorldService
+from world_weaver.services.merge_service import MergeService
+from world_weaver.services.patch_service import PatchService
 from world_weaver.services.story_service import StoryService
+from world_weaver.services.world_db_sync_service import WorldDbSyncService
 from world_weaver.services.world_bible_ingest_service import WorldBibleIngestService
 from world_weaver.storage.sqlite_world_store import SqliteWorldStore, WorldEntityRepository
 
@@ -21,6 +24,13 @@ def _default_model_for_provider(provider: str) -> str:
     if provider == "openai":
         return "gpt-4.1"
     return "mock-world-architect-v1"
+
+
+def _build_world_store(*, data_dir: Path, world_db_filename: str) -> SqliteWorldStore:
+    return SqliteWorldStore(
+        db_path=data_dir / world_db_filename,
+        migrations_dir=Path(__file__).resolve().parent / "storage" / "migrations",
+    )
 
 
 @app.command()
@@ -56,6 +66,73 @@ def generate_news(target_date: str = typer.Option(..., "--date", help="Date in Y
     )
     output_path = story_service.save_batch(batch)
     typer.echo(f"Generated {len(batch.stories)} stories for {parsed_date.isoformat()} at {output_path}")
+
+
+@app.command("update-world")
+def update_world(target_date: str = typer.Option(..., "--date", help="Date in YYYY-MM-DD format")) -> None:
+    """Generate a world-canon patch from a story batch and merge it into the world bible."""
+    settings = get_settings()
+    parsed_date = date.fromisoformat(target_date)
+    world_path = settings.data_dir / "worlds" / "world_bible.json"
+
+    provider = build_provider(settings)
+    story_service = StoryService(
+        settings.data_dir / "stories",
+        provider=provider,
+        prompts_dir=Path(__file__).resolve().parent / "prompts",
+    )
+    world_before = story_service.load_world_bible(world_path)
+    batch = story_service.load_batch(parsed_date)
+    if batch is None:
+        raise typer.BadParameter(f"Story batch not found for {parsed_date.isoformat()}")
+
+    patch_service = PatchService(
+        provider=provider,
+        prompts_dir=Path(__file__).resolve().parent / "prompts",
+        patches_dir=settings.data_dir / "patches",
+    )
+    patch = patch_service.generate_patch(
+        target_date=parsed_date.isoformat(),
+        world_bible=world_before,
+        story_batch=batch,
+        model=settings.llm_model,
+    )
+    patch_path = patch_service.save_patch(patch)
+
+    merge_service = MergeService(
+        worlds_dir=settings.data_dir / "worlds",
+        snapshots_dir=settings.data_dir / "snapshots",
+    )
+    world_after, report = merge_service.apply_patch(world_bible=world_before, patch=patch)
+    json_path, _ = merge_service.save_world(world_after)
+    WorldDbSyncService(
+        world_store=_build_world_store(data_dir=settings.data_dir, world_db_filename=settings.world_db_filename)
+    ).refresh_from_world_bible(world_after)
+    snapshot_path = merge_service.archive_run(
+        target_date=parsed_date.isoformat(),
+        world_before=world_before,
+        story_batch_payload=batch.model_dump(mode="json"),
+        patch=patch,
+        world_after=world_after,
+        merge_report=report,
+    )
+
+    typer.echo(
+        "Updated world canon "
+        f"for {parsed_date.isoformat()} at {json_path} "
+        f"(patch: {patch_path}, snapshot: {snapshot_path})"
+    )
+    typer.echo(
+        "Merge summary: "
+        f"timeline+={report.timeline_events_added}, "
+        f"threads+={report.open_threads_added}, "
+        f"threads_resolved={report.open_threads_resolved}, "
+        f"people+={report.people_added}/{report.people_updated} updated, "
+        f"orgs+={report.organizations_added}/{report.organizations_updated} updated, "
+        f"locations+={report.locations_added}/{report.locations_updated} updated."
+    )
+    if report.warnings:
+        typer.echo(f"Continuity warnings: {len(report.warnings)}")
 
 
 @app.command("set-llm-provider")
@@ -122,6 +199,9 @@ def init_world(
         worlds_dir=settings.data_dir / "worlds",
     )
     world, json_path, markdown_path = service.generate_and_save(seed_prompt=seed_prompt, model=settings.llm_model)
+    WorldDbSyncService(
+        world_store=_build_world_store(data_dir=settings.data_dir, world_db_filename=settings.world_db_filename)
+    ).refresh_from_world_bible(world)
     typer.echo(
         "Initialized world "
         f"'{world.metadata.name}' with {len(world.people)} people, "
@@ -151,9 +231,9 @@ def ingest_world_bible(
 ) -> None:
     """Ingest an existing world bible markdown into canonical files and SQLite entities."""
     settings = get_settings()
-    store = SqliteWorldStore(
-        db_path=settings.data_dir / settings.world_db_filename,
-        migrations_dir=Path(__file__).resolve().parent / "storage" / "migrations",
+    store = _build_world_store(
+        data_dir=settings.data_dir,
+        world_db_filename=settings.world_db_filename,
     )
     service = WorldBibleIngestService(
         markdown_path=source_markdown,
@@ -239,9 +319,9 @@ def world_summary(
     except Exception as exc:
         latest_stories = {"error": str(exc)}
 
-    store = SqliteWorldStore(
-        db_path=settings.data_dir / settings.world_db_filename,
-        migrations_dir=Path(__file__).resolve().parent / "storage" / "migrations",
+    store = _build_world_store(
+        data_dir=settings.data_dir,
+        world_db_filename=settings.world_db_filename,
     )
     store.run_migrations()
     repo = WorldEntityRepository(store)

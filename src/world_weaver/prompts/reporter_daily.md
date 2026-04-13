@@ -14,6 +14,8 @@ Hard constraints:
         "summary": "string",
         "body": "string",
         "category": "string",
+        "referenced_entities": ["string"],
+        "continuity_effects": ["string"],
         "metadata": {
           "story_id": "story-YYYY-MM-DD-###",
           "published_at": "ISO-8601 datetime",
@@ -29,6 +31,9 @@ Hard constraints:
 - Do not modify canon; generate stories only.
 - Write each story `body` as 3 to 4 distinct paragraphs separated by blank lines.
 - Make each paragraph substantive, with concrete developments, context, and consequences rather than a single summary sentence.
+- Populate `referenced_entities` with stable entity IDs when known, otherwise short canonical names.
+- Populate `continuity_effects` only with durable changes, unresolved tensions, or developments likely to matter for future coverage.
+- Do not add trivia, scene-setting details, or one-off color notes to `continuity_effects`.
 
 Editorial mix target:
 - 1 major story

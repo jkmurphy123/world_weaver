@@ -157,6 +157,24 @@ def test_init_world_command_accepts_prompt_text(tmp_path, monkeypatch) -> None:
     assert (tmp_path / "worlds" / "world_bible.md").exists()
 
 
+def test_init_world_command_refreshes_sqlite_projection(tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("NEWSROOM_DATA_DIR", str(tmp_path))
+    monkeypatch.setenv("NEWSROOM_LLM_PROVIDER", "mock")
+
+    result = runner.invoke(app, ["init-world", "--prompt", "A dense floating city ruled by data cartels."])
+
+    assert result.exit_code == 0
+    summary_result = runner.invoke(app, ["world-summary", "--output", "json"])
+    assert summary_result.exit_code == 0
+    payload = json.loads(summary_result.stdout)
+    assert payload["sqlite_entity_counts"] == {
+        "factions": 1,
+        "locations": 2,
+        "characters": 1,
+        "lore_entries": 3,
+    }
+
+
 def test_init_world_command_accepts_prompt_file(tmp_path, monkeypatch) -> None:
     monkeypatch.setenv("NEWSROOM_DATA_DIR", str(tmp_path))
     monkeypatch.setenv("NEWSROOM_LLM_PROVIDER", "mock")
@@ -174,6 +192,30 @@ def test_init_world_requires_exactly_one_prompt_input() -> None:
     assert result.exit_code != 0
     combined_output = f"{result.stdout}\n{result.stderr}"
     assert "Provide exactly one of --prompt or --prompt-file" in combined_output
+
+
+def test_update_world_command_refreshes_sqlite_projection(tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("NEWSROOM_DATA_DIR", str(tmp_path))
+    monkeypatch.setenv("NEWSROOM_LLM_PROVIDER", "mock")
+
+    init_result = runner.invoke(app, ["init-world", "--prompt", "A synthetic island city ruled by corporate blocs."])
+    assert init_result.exit_code == 0
+    generate_result = runner.invoke(app, ["generate-news", "--date", "2026-04-13"])
+    assert generate_result.exit_code == 0
+
+    update_result = runner.invoke(app, ["update-world", "--date", "2026-04-13"])
+
+    assert update_result.exit_code == 0
+    summary_result = runner.invoke(app, ["world-summary", "--output", "json"])
+    assert summary_result.exit_code == 0
+    payload = json.loads(summary_result.stdout)
+    assert payload["canon_counts"]["open_threads"] >= 1
+    assert payload["sqlite_entity_counts"] == {
+        "factions": 1,
+        "locations": 2,
+        "characters": 1,
+        "lore_entries": 5,
+    }
 
 
 def test_world_summary_command_outputs_json_with_story_and_sqlite_counts(tmp_path, monkeypatch) -> None:
