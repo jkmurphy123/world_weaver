@@ -17,6 +17,7 @@ from world_weaver.services.story_service import StoryService
 from world_weaver.services.world_db_sync_service import WorldDbSyncService
 from world_weaver.services.world_bible_ingest_service import WorldBibleIngestService
 from world_weaver.storage.sqlite_world_store import SqliteWorldStore, WorldEntityRepository
+from world_weaver.worldcodex_client import WorldCodexClientError, build_worldcodex_client
 
 app = typer.Typer(help="World Weaver newsroom CLI")
 
@@ -55,17 +56,26 @@ def generate_news(target_date: str = typer.Option(..., "--date", help="Date in Y
     settings = get_settings()
     parsed_date = date.fromisoformat(target_date)
 
-    world_path = settings.data_dir / "worlds" / "world_bible.json"
     provider = build_provider(settings)
     story_service = StoryService(
         settings.data_dir / "stories",
         provider=provider,
         prompts_dir=Path(__file__).resolve().parent / "prompts",
     )
-    world = story_service.load_world_bible(world_path)
+    worldcodex = build_worldcodex_client(
+        world_id=settings.worldcodex_world,
+        cli=settings.worldcodex_cli,
+        timeout_seconds=settings.worldcodex_timeout_seconds,
+    )
+    try:
+        news_context = worldcodex.export_context("news-context")
+    except WorldCodexClientError as exc:
+        typer.echo(f"Unable to load WorldCodex news context: {exc}")
+        raise typer.Exit(code=1) from exc
+
     batch = story_service.generate_reported_batch(
         target_date=parsed_date,
-        world_bible=world,
+        news_context=news_context,
         model=settings.llm_model,
         count=settings.default_story_count,
     )

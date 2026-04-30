@@ -10,6 +10,25 @@ from world_weaver.storage.sqlite_world_store import SqliteWorldStore, WorldEntit
 runner = CliRunner()
 
 
+class _FakeWorldCodexClient:
+    def __init__(self, news_context: dict | None = None) -> None:
+        self.news_context = news_context or {
+            "metadata": {
+                "schema_version": "worldcodex.context.v1",
+                "export_type": "news_context",
+                "world_id": "world-new-meridian",
+            },
+            "places": [{"id": "place.central", "name": "Meridian Central"}],
+            "factions": [{"id": "org.council", "name": "Meridian Council"}],
+            "open_threads": [{"id": "conflict.trade", "summary": "Trade routes remain contested."}],
+        }
+        self.exported_contexts: list[str] = []
+
+    def export_context(self, context_type: str) -> dict:
+        self.exported_contexts.append(context_type)
+        return self.news_context
+
+
 def test_cli_help_works() -> None:
     result = runner.invoke(app, ["--help"])
     assert result.exit_code == 0
@@ -25,97 +44,73 @@ def test_serve_help_works() -> None:
 def test_generate_news_command_persists_batch_by_date(tmp_path, monkeypatch) -> None:
     monkeypatch.setenv("NEWSROOM_DATA_DIR", str(tmp_path))
     monkeypatch.setenv("NEWSROOM_LLM_PROVIDER", "mock")
-
-    init_result = runner.invoke(app, ["init-world", "--prompt", "A synthetic island city ruled by corporate blocs."])
-    assert init_result.exit_code == 0
+    fake_worldcodex = _FakeWorldCodexClient()
+    monkeypatch.setattr("world_weaver.cli.build_worldcodex_client", lambda **_: fake_worldcodex)
 
     result = runner.invoke(app, ["generate-news", "--date", "2026-04-09"])
 
     assert result.exit_code == 0
     assert "Generated 4 stories for 2026-04-09" in result.stdout
     assert (tmp_path / "stories" / "2026-04-09.json").exists()
+    assert fake_worldcodex.exported_contexts == ["news-context"]
 
 
-def test_generate_news_command_accepts_canonical_world_bible_shape(tmp_path, monkeypatch) -> None:
+def test_generate_news_command_accepts_worldcodex_news_context_shape(tmp_path, monkeypatch) -> None:
     monkeypatch.setenv("NEWSROOM_DATA_DIR", str(tmp_path))
     monkeypatch.setenv("NEWSROOM_LLM_PROVIDER", "mock")
-
-    worlds_dir = tmp_path / "worlds"
-    worlds_dir.mkdir(parents=True, exist_ok=True)
-    (worlds_dir / "world_bible.json").write_text(
-        json.dumps(
-            {
-                "world": {
-                    "id": "world-new-meridian",
-                    "name": "New Meridian",
-                    "genre": "cyberpunk",
-                    "tone": "investigative",
-                    "premise": "Corporate blocs govern a vertical city-state.",
-                    "calendar_mode": "real_time_daily",
-                },
-                "style_guide": {
-                    "news_voice": "factual and skeptical",
-                    "allowed_story_types": ["politics", "business", "culture"],
-                    "taboos": ["out-of-world references"],
-                },
-                "continuity": {
-                    "current_date": "2074-04-11",
-                    "major_facts": [
-                        {
-                            "id": "fact-1",
-                            "text": "The Meridian Council controls trade and media licenses.",
-                            "tier": "core_canon",
-                        }
-                    ],
-                    "rules": ["No supernatural powers."],
-                },
-                "locations": [
-                    {
-                        "id": "loc-1",
-                        "name": "Meridian Central",
-                        "type": "district",
-                        "description": "Corporate core district.",
-                        "confidence_tier": "core_canon",
-                    }
-                ],
-                "organizations": [
-                    {
-                        "id": "org-1",
-                        "name": "Meridian Council",
-                        "type": "governing_consortium",
-                        "description": "Ruling consortium.",
-                        "confidence_tier": "core_canon",
-                    }
-                ],
-                "people": [
-                    {
-                        "id": "person-1",
-                        "name": "Vex",
-                        "role": "Hacker icon",
-                        "affiliation": "Free Circuit",
-                        "status": "missing",
-                        "confidence_tier": "established",
-                    }
-                ],
-                "timeline": [
-                    {
-                        "id": "event-1",
-                        "date": "2074-01-01",
-                        "title": "Founding event",
-                        "summary": "The world bible baseline is established.",
-                        "confidence_tier": "core_canon",
-                    }
-                ],
-            }
-        ),
-        encoding="utf-8",
+    fake_worldcodex = _FakeWorldCodexClient(
+        {
+            "metadata": {
+                "schema_version": "worldcodex.context.v1",
+                "export_type": "news_context",
+                "world_id": "world-new-meridian",
+                "world_title": "New Meridian",
+            },
+            "places": [
+                {
+                    "id": "place.meridian_central",
+                    "type": "place",
+                    "name": "Meridian Central",
+                    "summary": "Corporate core district.",
+                }
+            ],
+            "factions": [
+                {
+                    "id": "org.meridian_council",
+                    "type": "org",
+                    "name": "Meridian Council",
+                    "summary": "Ruling consortium.",
+                }
+            ],
+            "characters": [
+                {
+                    "id": "character.vex",
+                    "type": "character",
+                    "name": "Vex",
+                    "summary": "Hacker icon.",
+                }
+            ],
+            "timeline": [
+                {
+                    "id": "event.founding",
+                    "summary": "The world baseline is established.",
+                    "participants": ["org.meridian_council"],
+                    "locations": ["place.meridian_central"],
+                }
+            ],
+        }
     )
+    monkeypatch.setattr("world_weaver.cli.build_worldcodex_client", lambda **_: fake_worldcodex)
 
     result = runner.invoke(app, ["generate-news", "--date", "2026-04-11"])
 
     assert result.exit_code == 0
     assert "Generated 4 stories for 2026-04-11" in result.stdout
-    assert (tmp_path / "stories" / "2026-04-11.json").exists()
+    output_path = tmp_path / "stories" / "2026-04-11.json"
+    assert output_path.exists()
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert payload["stories"][0]["metadata"]["world_id"] == "world-new-meridian"
+    assert "org.meridian_council" in payload["stories"][0]["referenced_entities"]
 
 
 def test_set_llm_provider_command_persists_selection(tmp_path, monkeypatch) -> None:

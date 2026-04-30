@@ -4,6 +4,7 @@ import json
 import random
 from datetime import date, datetime, timezone
 from pathlib import Path
+from typing import Any
 
 from pydantic import ValidationError
 
@@ -73,7 +74,7 @@ class StoryService:
         self,
         *,
         target_date: date,
-        world_bible: WorldBible,
+        news_context: dict[str, Any],
         model: str,
         count: int = 4,
     ) -> StoryBatch:
@@ -89,7 +90,7 @@ class StoryService:
                     "target_date": target_date.isoformat(),
                     "edition": "morning",
                     "story_count": count,
-                    "world_bible": world_bible.model_dump(mode="json"),
+                    "news_context": news_context,
                 },
                 separators=(",", ":"),
             ),

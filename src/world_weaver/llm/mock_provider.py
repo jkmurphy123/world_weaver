@@ -137,15 +137,20 @@ class MockLLMProvider(LLMProvider):
 
         target_date = str(input_payload.get("target_date", now.date().isoformat()))
         story_count = int(input_payload.get("story_count", 4))
-        world_bible = input_payload.get("world_bible", {})
-        world_id = world_bible.get("world", {}).get("id", "world-main")
-        organizations = world_bible.get("organizations", [])
-        locations = world_bible.get("locations", [])
-        story_hooks = world_bible.get("story_hooks", [])
+        news_context = input_payload.get("news_context")
+        if not isinstance(news_context, dict):
+            news_context = input_payload.get("world_bible", {})
+        if not isinstance(news_context, dict):
+            news_context = {}
 
-        org_name = organizations[0]["name"] if organizations else "Civic Council"
-        location_name = locations[0]["name"] if locations else "Central District"
-        hook = story_hooks[0] if story_hooks else "A policy shift exposes new fault lines."
+        world_id = _world_id_from_context(news_context)
+        organization = _first_context_item(news_context, ("factions", "organizations", "orgs"))
+        location = _first_context_item(news_context, ("places", "locations", "regions"))
+        org_name = _item_name(organization, "Civic Council")
+        org_ref = _item_ref(organization, org_name)
+        location_name = _item_name(location, "Central District")
+        location_ref = _item_ref(location, location_name)
+        hook = _first_context_hook(news_context) or "A policy shift exposes new fault lines."
 
         stories = []
         for index in range(1, story_count + 1):
@@ -160,7 +165,7 @@ class MockLLMProvider(LLMProvider):
                         f"decision cycle {index}."
                     ),
                     "category": category,
-                    "referenced_entities": [org_name, location_name],
+                    "referenced_entities": [org_ref, location_ref],
                     "continuity_effects": [
                         f"{org_name} introduced a durable policy change affecting {location_name}.",
                         f"Public reaction in {location_name} suggests the fallout may drive more coverage.",
@@ -335,6 +340,80 @@ def _title_from_prompt(seed_prompt: str) -> str:
     if not words:
         return "New Meridian"
     return " ".join(words[:3]).title() + " World"
+
+
+def _world_id_from_context(context: dict) -> str:
+    metadata = context.get("metadata")
+    if isinstance(metadata, dict) and isinstance(metadata.get("world_id"), str):
+        return metadata["world_id"]
+
+    world = context.get("world")
+    if isinstance(world, dict) and isinstance(world.get("id"), str):
+        return world["id"]
+
+    return "world-main"
+
+
+def _first_context_item(context: dict, keys: tuple[str, ...]) -> dict | None:
+    for key in keys:
+        items = context.get(key)
+        if isinstance(items, list):
+            for item in items:
+                if isinstance(item, dict):
+                    return item
+
+    atoms_by_type = context.get("atoms_by_type")
+    if isinstance(atoms_by_type, dict):
+        for key in keys:
+            items = atoms_by_type.get(key)
+            if isinstance(items, list):
+                for item in items:
+                    if isinstance(item, dict):
+                        return item
+    return None
+
+
+def _item_name(item: dict | None, fallback: str) -> str:
+    if not isinstance(item, dict):
+        return fallback
+    for key in ("name", "title", "label", "id"):
+        value = item.get(key)
+        if isinstance(value, str) and value.strip():
+            return value
+    return fallback
+
+
+def _item_ref(item: dict | None, fallback: str) -> str:
+    if isinstance(item, dict):
+        value = item.get("id")
+        if isinstance(value, str) and value.strip():
+            return value
+    return fallback
+
+
+def _first_context_hook(context: dict) -> str | None:
+    for key in ("story_hooks", "open_threads", "conflicts", "timeline"):
+        items = context.get(key)
+        if not isinstance(items, list):
+            continue
+        for item in items:
+            if isinstance(item, str) and item.strip():
+                return item
+            if isinstance(item, dict):
+                text = item.get("text") or item.get("summary") or item.get("description") or item.get("title")
+                if isinstance(text, str) and text.strip():
+                    return text
+
+    for key in ("places", "factions", "characters"):
+        item = _first_context_item(context, (key,))
+        if isinstance(item, dict):
+            data = item.get("data")
+            hooks = data.get("story_hooks") if isinstance(data, dict) else item.get("story_hooks")
+            if isinstance(hooks, list):
+                for hook in hooks:
+                    if isinstance(hook, str) and hook.strip():
+                        return hook
+    return None
 
 
 def _extract_named_phrase(source_text: str, *, pattern: str) -> str | None:

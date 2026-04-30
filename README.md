@@ -27,7 +27,7 @@ newsroom serve --host 0.0.0.0 --port 8010
 newsroom init-world --prompt "A synthetic island city ruled by corporate blocs."
 newsroom init-world --prompt-file ./seed_prompt.txt
 
-# Generate one daily story batch
+# Generate one daily story batch from a WorldCodex news-context export
 newsroom generate-news --date 2026-04-13
 
 # Merge a day's published stories back into canon
@@ -68,6 +68,9 @@ NEWSROOM_PORT=8000
 NEWSROOM_DATA_DIR=data
 NEWSROOM_API_TOKEN=newsroom-dev-token
 NEWSROOM_DEFAULT_STORY_COUNT=4
+NEWSROOM_WORLDCODEX_WORLD=world-main
+NEWSROOM_WORLDCODEX_CLI=world
+NEWSROOM_WORLDCODEX_TIMEOUT_SECONDS=60
 NEWSROOM_LLM_PROVIDER=mock
 NEWSROOM_LLM_MODEL=mock-world-architect-v1
 NEWSROOM_OPENAI_TIMEOUT_SECONDS=120

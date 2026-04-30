@@ -71,7 +71,11 @@ class _StubReporterProvider:
 
 
 def test_generate_reported_batch_validates_reporter_output(tmp_path) -> None:
-    world = _build_world()
+    news_context = {
+        "metadata": {"schema_version": "worldcodex.context.v1", "export_type": "news_context", "world_id": "chronicle-sphere"},
+        "places": [{"id": "place.archive", "name": "Archive District"}],
+        "factions": [{"id": "org.council", "name": "Archive Council"}],
+    }
     prompts_dir = tmp_path / "prompts"
     prompts_dir.mkdir(parents=True, exist_ok=True)
     (prompts_dir / "reporter_daily.md").write_text("You are the News Reporter.", encoding="utf-8")
@@ -100,7 +104,7 @@ def test_generate_reported_batch_validates_reporter_output(tmp_path) -> None:
 
     batch = service.generate_reported_batch(
         target_date=date(2026, 4, 9),
-        world_bible=world,
+        news_context=news_context,
         model="mock-reporter-v1",
         count=1,
     )
@@ -108,10 +112,12 @@ def test_generate_reported_batch_validates_reporter_output(tmp_path) -> None:
     assert batch.date == date(2026, 4, 9)
     assert len(batch.stories) == 1
     assert provider.requests[0].model == "mock-reporter-v1"
+    request_payload = json.loads(provider.requests[0].user_prompt)
+    assert request_payload["news_context"]["metadata"]["world_id"] == "chronicle-sphere"
+    assert "world_bible" not in request_payload
 
 
 def test_generate_reported_batch_rejects_invalid_json(tmp_path) -> None:
-    world = _build_world()
     prompts_dir = tmp_path / "prompts"
     prompts_dir.mkdir(parents=True, exist_ok=True)
     (prompts_dir / "reporter_daily.md").write_text("You are the News Reporter.", encoding="utf-8")
@@ -121,14 +127,13 @@ def test_generate_reported_batch_rejects_invalid_json(tmp_path) -> None:
     with pytest.raises(ValueError, match="invalid JSON"):
         service.generate_reported_batch(
             target_date=date(2026, 4, 9),
-            world_bible=world,
+            news_context={"metadata": {"world_id": "chronicle-sphere"}},
             model="mock-reporter-v1",
             count=1,
         )
 
 
 def test_generate_reported_batch_rejects_invalid_schema(tmp_path) -> None:
-    world = _build_world()
     prompts_dir = tmp_path / "prompts"
     prompts_dir.mkdir(parents=True, exist_ok=True)
     (prompts_dir / "reporter_daily.md").write_text("You are the News Reporter.", encoding="utf-8")
@@ -138,7 +143,7 @@ def test_generate_reported_batch_rejects_invalid_schema(tmp_path) -> None:
     with pytest.raises(ValueError, match="StoryBatch schema"):
         service.generate_reported_batch(
             target_date=date(2026, 4, 9),
-            world_bible=world,
+            news_context={"metadata": {"world_id": "chronicle-sphere"}},
             model="mock-reporter-v1",
             count=1,
         )
