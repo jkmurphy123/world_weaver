@@ -1,0 +1,85 @@
+{
+  "date": "2026-04-14",
+  "stories": [
+    {
+      "headline": "Civic Council announces changes across Central District",
+      "summary": "Officials and residents in Central District react to new directives.",
+      "body": "A policy shift exposes new fault lines. Field reporting indicates unfolding consequences tied to decision cycle 1.",
+      "category": "politics",
+      "metadata": {
+        "story_id": "story-2026-04-14-001",
+        "published_at": "2026-04-30T15:35:05.127985Z",
+        "target_date": "2026-04-14",
+        "world_id": "world-main"
+      },
+      "referenced_entities": [
+        "Civic Council",
+        "Central District"
+      ],
+      "continuity_effects": [
+        "Civic Council introduced a durable policy change affecting Central District.",
+        "Public reaction in Central District suggests the fallout may drive more coverage."
+      ]
+    },
+    {
+      "headline": "Civic Council announces changes across Central District",
+      "summary": "Officials and residents in Central District react to new directives.",
+      "body": "A policy shift exposes new fault lines. Field reporting indicates unfolding consequences tied to decision cycle 2.",
+      "category": "business",
+      "metadata": {
+        "story_id": "story-2026-04-14-002",
+        "published_at": "2026-04-30T15:35:05.127985Z",
+        "target_date": "2026-04-14",
+        "world_id": "world-main"
+      },
+      "referenced_entities": [
+        "Civic Council",
+        "Central District"
+      ],
+      "continuity_effects": [
+        "Civic Council introduced a durable policy change affecting Central District.",
+        "Public reaction in Central District suggests the fallout may drive more coverage."
+      ]
+    },
+    {
+      "headline": "Civic Council announces changes across Central District",
+      "summary": "Officials and residents in Central District react to new directives.",
+      "body": "A policy shift exposes new fault lines. Field reporting indicates unfolding consequences tied to decision cycle 3.",
+      "category": "science",
+      "metadata": {
+        "story_id": "story-2026-04-14-003",
+        "published_at": "2026-04-30T15:35:05.127985Z",
+        "target_date": "2026-04-14",
+        "world_id": "world-main"
+      },
+      "referenced_entities": [
+        "Civic Council",
+        "Central District"
+      ],
+      "continuity_effects": [
+        "Civic Council introduced a durable policy change affecting Central District.",
+        "Public reaction in Central District suggests the fallout may drive more coverage."
+      ]
+    },
+    {
+      "headline": "Civic Council announces changes across Central District",
+      "summary": "Officials and residents in Central District react to new directives.",
+      "body": "A policy shift exposes new fault lines. Field reporting indicates unfolding consequences tied to decision cycle 4.",
+      "category": "culture",
+      "metadata": {
+        "story_id": "story-2026-04-14-004",
+        "published_at": "2026-04-30T15:35:05.127985Z",
+        "target_date": "2026-04-14",
+        "world_id": "world-main"
+      },
+      "referenced_entities": [
+        "Civic Council",
+        "Central District"
+      ],
+      "continuity_effects": [
+        "Civic Council introduced a durable policy change affecting Central District.",
+        "Public reaction in Central District suggests the fallout may drive more coverage."
+      ]
+    }
+  ]
+}

@@ -30,6 +30,8 @@ Hard constraints:
 - Keep stories grounded in provided canon and references.
 - Do not modify canon; generate stories only.
 - Write each story `body` as 3 to 4 distinct paragraphs separated by blank lines.
+- Aim for approximately `target_body_words` words in each story `body`.
+- Do not make story bodies shorter than 80% of `target_body_words` unless the requested value is below 150.
 - Make each paragraph substantive, with concrete developments, context, and consequences rather than a single summary sentence.
 - Populate `referenced_entities` with stable WorldCodex atom IDs when known, otherwise short canonical names.
 - Populate `continuity_effects` only with durable changes, unresolved tensions, or developments likely to matter for future coverage.
@@ -44,6 +46,7 @@ Input is JSON containing:
 - `target_date`
 - `edition`
 - `story_count`
+- `target_body_words`
 - `news_context`
 
 The `news_context` comes from `world export <world> news-context`. Treat its places, factions,

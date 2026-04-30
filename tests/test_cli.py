@@ -62,11 +62,14 @@ def test_generate_news_command_persists_batch_by_date(tmp_path, monkeypatch) -> 
     fake_worldcodex = _FakeWorldCodexClient()
     monkeypatch.setattr("world_weaver.cli.build_worldcodex_client", lambda **_: fake_worldcodex)
 
-    result = runner.invoke(app, ["generate-news", "--date", "2026-04-09"])
+    result = runner.invoke(app, ["generate-news", "--date", "2026-04-09", "--body-words", "500"])
 
     assert result.exit_code == 0
     assert "Generated 4 stories for 2026-04-09" in result.stdout
-    assert (tmp_path / "stories" / "2026-04-09.json").exists()
+    output_path = tmp_path / "stories" / "2026-04-09.json"
+    assert output_path.exists()
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert len(payload["stories"][0]["body"].split()) >= 400
     assert fake_worldcodex.exported_contexts == ["news-context"]
 
 

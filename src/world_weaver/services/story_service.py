@@ -77,6 +77,7 @@ class StoryService:
         news_context: dict[str, Any],
         model: str,
         count: int = 4,
+        target_body_words: int = 500,
     ) -> StoryBatch:
         if self._provider is None:
             raise ValueError("Reporter generation requires an LLM provider")
@@ -90,6 +91,7 @@ class StoryService:
                     "target_date": target_date.isoformat(),
                     "edition": "morning",
                     "story_count": count,
+                    "target_body_words": target_body_words,
                     "news_context": news_context,
                 },
                 separators=(",", ":"),

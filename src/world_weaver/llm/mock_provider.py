@@ -139,6 +139,7 @@ class MockLLMProvider(LLMProvider):
 
         target_date = str(input_payload.get("target_date", now.date().isoformat()))
         story_count = int(input_payload.get("story_count", 4))
+        target_body_words = int(input_payload.get("target_body_words", 500))
         news_context = input_payload.get("news_context")
         if not isinstance(news_context, dict):
             news_context = input_payload.get("world_bible", {})
@@ -162,9 +163,12 @@ class MockLLMProvider(LLMProvider):
                 {
                     "headline": f"{org_name} announces changes across {location_name}",
                     "summary": f"Officials and residents in {location_name} react to new directives.",
-                    "body": (
-                        f"{hook} Field reporting indicates unfolding consequences tied to "
-                        f"decision cycle {index}."
+                    "body": _build_mock_story_body(
+                        hook=hook,
+                        org_name=org_name,
+                        location_name=location_name,
+                        index=index,
+                        target_words=target_body_words,
                     ),
                     "category": category,
                     "referenced_entities": [org_ref, location_ref],
@@ -413,6 +417,68 @@ def _title_from_prompt(seed_prompt: str) -> str:
     if not words:
         return "New Meridian"
     return " ".join(words[:3]).title() + " World"
+
+
+def _build_mock_story_body(
+    *,
+    hook: str,
+    org_name: str,
+    location_name: str,
+    index: int,
+    target_words: int,
+) -> str:
+    paragraphs = [
+        (
+            f"{hook} Reporters in {location_name} said the latest announcement from {org_name} "
+            f"changed the practical terms of daily life for residents, operators, and local officials. "
+            f"The decision, marked as cycle {index}, moved quickly from administrative language into street-level "
+            "arguments about access, accountability, and who receives priority when public systems are strained."
+        ),
+        (
+            f"Several departments tied to {org_name} described the change as a measured adjustment, but neighborhood "
+            f"groups in {location_name} said the rollout left too many questions unanswered. Business owners asked "
+            "whether the new rules would affect delivery windows, labor organizers warned that enforcement could fall "
+            "unevenly, and civic monitors requested a written timetable for review."
+        ),
+        (
+            "The immediate effects are still uneven. Some transit coordinators reported smoother routing through "
+            "busy corridors, while smaller associations said they had not received enough notice to adapt. Analysts "
+            "watching the dispute said the policy may become a test of whether central authorities can make technical "
+            "changes without deepening public suspicion."
+        ),
+        (
+            f"For now, the story remains open. Residents in {location_name} are tracking whether {org_name} publishes "
+            "clear metrics, whether affected groups are invited into the next round of decisions, and whether today's "
+            "shift becomes a temporary adjustment or a durable precedent for future governance."
+        ),
+    ]
+    expansion_sentences = [
+        f"At the central dispatch office, supervisors said they were still reconciling field reports from {location_name} with the public timetable released by {org_name}.",
+        "Several clerks described a backlog of appeals from households and small firms that wanted exemptions before the new rules took full effect.",
+        f"One district coordinator said the most urgent complaints came from edge neighborhoods that depend on predictable access to {location_name}'s service corridors.",
+        f"{org_name} has promised a review panel, but it has not said whether residents or independent auditors will have voting seats.",
+        "That omission has become a point of friction for civic groups, who argue that technical changes often become permanent before the public understands their reach.",
+        "Market associations are also watching the policy closely because delivery delays can move costs quickly through rent, food prices, and repair schedules.",
+        f"In private briefings, aides to {org_name} framed the decision as a pressure test rather than a final settlement.",
+        "Opposition organizers rejected that description and said a temporary measure can still create winners and losers if enforcement begins immediately.",
+        f"The next signal will come from field offices in {location_name}, where managers are expected to publish compliance numbers later in the week.",
+        "If those numbers are incomplete, watchdog groups say they will ask for raw logs rather than summary charts.",
+        "Residents interviewed near the main interchange said they were less concerned with slogans than with whether services arrive on time.",
+        "Several said they would judge the policy by missed appointments, rerouted deliveries, and the speed of responses when disputes are filed.",
+        f"That practical standard may make the issue harder for {org_name} to contain through routine messaging.",
+        "A policy that looks narrow inside an agency memo can feel much larger when it changes the order in which people receive help.",
+        f"By evening, local notice boards in {location_name} were already collecting complaints, workarounds, and unofficial advice.",
+        "The volume of those reports suggests the story will keep producing follow-up questions even if the first day avoids a visible breakdown.",
+    ]
+
+    sentence_index = index % len(expansion_sentences)
+    while len("\n\n".join(paragraphs).split()) < target_words and sentence_index < len(expansion_sentences) + index:
+        paragraph_index = sentence_index % len(paragraphs)
+        sentence = expansion_sentences[sentence_index % len(expansion_sentences)]
+        if sentence not in paragraphs[paragraph_index]:
+            paragraphs[paragraph_index] = f"{paragraphs[paragraph_index]} {sentence}"
+        sentence_index += 1
+    return "\n\n".join(paragraphs)
 
 
 def _world_id_from_context(context: dict) -> str:

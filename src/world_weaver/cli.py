@@ -73,10 +73,14 @@ def serve(host: str | None = None, port: int | None = None) -> None:
 
 
 @app.command("generate-news")
-def generate_news(target_date: str = typer.Option(..., "--date", help="Date in YYYY-MM-DD format")) -> None:
+def generate_news(
+    target_date: str = typer.Option(..., "--date", help="Date in YYYY-MM-DD format"),
+    body_words: int | None = typer.Option(None, "--body-words", help="Approximate target words per story body"),
+) -> None:
     """Generate and persist a daily story batch."""
     settings = get_settings()
     parsed_date = date.fromisoformat(target_date)
+    target_body_words = body_words or settings.default_story_body_words
 
     provider = build_provider(settings)
     story_service = StoryService(
@@ -100,6 +104,7 @@ def generate_news(target_date: str = typer.Option(..., "--date", help="Date in Y
         news_context=news_context,
         model=settings.llm_model,
         count=settings.default_story_count,
+        target_body_words=target_body_words,
     )
     output_path = story_service.save_batch(batch)
     typer.echo(f"Generated {len(batch.stories)} stories for {parsed_date.isoformat()} at {output_path}")

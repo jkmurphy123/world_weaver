@@ -56,6 +56,7 @@ class Settings(BaseSettings):
     default_world_id: str = "world-main"
     default_world_name: str = "New Meridian"
     default_story_count: int = 4
+    default_story_body_words: int = 500
     worldcodex_world: str = "world-main"
     worldcodex_cli: str = "world"
     worldcodex_timeout_seconds: int = 60

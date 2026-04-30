@@ -107,12 +107,14 @@ def test_generate_reported_batch_validates_reporter_output(tmp_path) -> None:
         news_context=news_context,
         model="mock-reporter-v1",
         count=1,
+        target_body_words=500,
     )
 
     assert batch.date == date(2026, 4, 9)
     assert len(batch.stories) == 1
     assert provider.requests[0].model == "mock-reporter-v1"
     request_payload = json.loads(provider.requests[0].user_prompt)
+    assert request_payload["target_body_words"] == 500
     assert request_payload["news_context"]["metadata"]["world_id"] == "chronicle-sphere"
     assert "world_bible" not in request_payload
 
