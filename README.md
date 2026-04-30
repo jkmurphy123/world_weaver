@@ -30,6 +30,9 @@ newsroom init-world --prompt-file ./seed_prompt.txt
 # Generate one daily story batch from a WorldCodex news-context export
 newsroom generate-news --date 2026-04-13
 
+# Propose WorldCodex canon updates from a saved story batch
+newsroom propose-world-patch --date 2026-04-13
+
 # Merge a day's published stories back into canon
 newsroom update-world --date 2026-04-13
 

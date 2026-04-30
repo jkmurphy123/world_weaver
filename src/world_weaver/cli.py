@@ -12,7 +12,7 @@ from world_weaver.config import get_settings, update_settings_file
 from world_weaver.llm.factory import build_provider
 from world_weaver.services.init_world_service import InitWorldService
 from world_weaver.services.merge_service import MergeService
-from world_weaver.services.patch_service import PatchService
+from world_weaver.services.patch_service import PatchService, WorldCodexPatchProposalService
 from world_weaver.services.story_service import StoryService
 from world_weaver.services.world_db_sync_service import WorldDbSyncService
 from world_weaver.services.world_bible_ingest_service import WorldBibleIngestService
@@ -148,6 +148,53 @@ def update_world(target_date: str = typer.Option(..., "--date", help="Date in YY
     )
     if report.warnings:
         typer.echo(f"Continuity warnings: {len(report.warnings)}")
+
+
+@app.command("propose-world-patch")
+def propose_world_patch(target_date: str = typer.Option(..., "--date", help="Date in YYYY-MM-DD format")) -> None:
+    """Generate and save a WorldCodex patch proposal from a story batch."""
+    settings = get_settings()
+    parsed_date = date.fromisoformat(target_date)
+
+    provider = build_provider(settings)
+    story_service = StoryService(
+        settings.data_dir / "stories",
+        provider=provider,
+        prompts_dir=Path(__file__).resolve().parent / "prompts",
+    )
+    batch = story_service.load_batch(parsed_date)
+    if batch is None:
+        raise typer.BadParameter(f"Story batch not found for {parsed_date.isoformat()}")
+
+    worldcodex = build_worldcodex_client(
+        world_id=settings.worldcodex_world,
+        cli=settings.worldcodex_cli,
+        timeout_seconds=settings.worldcodex_timeout_seconds,
+    )
+    try:
+        news_context = worldcodex.export_context("news-context")
+    except WorldCodexClientError as exc:
+        typer.echo(f"Unable to load WorldCodex news context: {exc}")
+        raise typer.Exit(code=1) from exc
+
+    proposal_service = WorldCodexPatchProposalService(
+        provider=provider,
+        prompts_dir=Path(__file__).resolve().parent / "prompts",
+        patches_dir=settings.data_dir / "patches",
+    )
+    patch = proposal_service.generate_patch(
+        target_date=parsed_date.isoformat(),
+        news_context=news_context,
+        story_batch=batch,
+        model=settings.llm_model,
+    )
+    patch_path = proposal_service.save_patch(patch, filename_stem=parsed_date.isoformat())
+
+    typer.echo(
+        "Generated WorldCodex patch proposal "
+        f"for {parsed_date.isoformat()} at {patch_path} "
+        f"({len(patch['operations'])} operations)"
+    )
 
 
 @app.command("add-canon")

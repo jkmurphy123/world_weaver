@@ -113,6 +113,50 @@ def test_generate_news_command_accepts_worldcodex_news_context_shape(tmp_path, m
     assert "org.meridian_council" in payload["stories"][0]["referenced_entities"]
 
 
+def test_propose_world_patch_command_generates_worldcodex_patch(tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("NEWSROOM_DATA_DIR", str(tmp_path))
+    monkeypatch.setenv("NEWSROOM_LLM_PROVIDER", "mock")
+    fake_worldcodex = _FakeWorldCodexClient()
+    monkeypatch.setattr("world_weaver.cli.build_worldcodex_client", lambda **_: fake_worldcodex)
+
+    stories_dir = tmp_path / "stories"
+    stories_dir.mkdir(parents=True, exist_ok=True)
+    (stories_dir / "2026-04-30.json").write_text(
+        json.dumps(
+            {
+                "date": "2026-04-30",
+                "stories": [
+                    {
+                        "headline": "Council changes freight access",
+                        "summary": "The council changed freight access after a tense vote.",
+                        "body": "A complete story body.",
+                        "category": "politics",
+                        "referenced_entities": ["org.council", "place.central"],
+                        "continuity_effects": ["Freight access rules changed."],
+                        "metadata": {
+                            "story_id": "story-2026-04-30-001",
+                            "published_at": "2026-04-30T12:00:00+00:00",
+                            "target_date": "2026-04-30",
+                            "world_id": "world-new-meridian",
+                        },
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(app, ["propose-world-patch", "--date", "2026-04-30"])
+
+    assert result.exit_code == 0
+    assert "Generated WorldCodex patch proposal for 2026-04-30" in result.stdout
+    patch_path = tmp_path / "patches" / "2026-04-30.json"
+    assert patch_path.exists()
+    patch = json.loads(patch_path.read_text(encoding="utf-8"))
+    assert patch["schema_version"] == "worldcodex.patch.v1"
+    assert patch["operations"][0]["op"] == "add_timeline_event"
+
+
 def test_set_llm_provider_command_persists_selection(tmp_path, monkeypatch) -> None:
     env_path = tmp_path / ".env"
     monkeypatch.setenv("NEWSROOM_ENV_FILE", str(env_path))

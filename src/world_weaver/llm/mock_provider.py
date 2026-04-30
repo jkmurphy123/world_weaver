@@ -20,6 +20,8 @@ class MockLLMProvider(LLMProvider):
 
     def generate_json(self, request: PromptRequest) -> str:
         normalized_prompt = request.system_prompt.lower()
+        if "worldcodex.patch.v1" in normalized_prompt or "worldcodex patch proposal" in normalized_prompt:
+            return self._generate_worldcodex_patch(request)
         if "operator-provided canon note" in normalized_prompt:
             return self._generate_manual_canon_patch(request)
         if "canon update patch" in normalized_prompt:
@@ -180,6 +182,77 @@ class MockLLMProvider(LLMProvider):
             )
 
         return json.dumps({"date": target_date, "stories": stories})
+
+    def _generate_worldcodex_patch(self, request: PromptRequest) -> str:
+        now = datetime.now(tz=timezone.utc)
+
+        try:
+            input_payload = json.loads(request.user_prompt)
+        except json.JSONDecodeError:
+            input_payload = {}
+
+        target_date = str(input_payload.get("target_date", now.date().isoformat()))
+        story_batch = input_payload.get("story_batch", {})
+        stories = story_batch.get("stories", []) if isinstance(story_batch, dict) else []
+        first_story = stories[0] if stories and isinstance(stories[0], dict) else {}
+
+        headline = str(first_story.get("headline") or "Newsroom reports a consequential development")
+        summary = str(first_story.get("summary") or "A published story established a durable development.")
+        referenced_entities = first_story.get("referenced_entities", [])
+        if not isinstance(referenced_entities, list):
+            referenced_entities = []
+        refs = [ref for ref in referenced_entities if isinstance(ref, str) and ref.strip()]
+        locations = [ref for ref in refs if ref.startswith(("place.", "loc."))]
+        participants = [ref for ref in refs if ref not in locations]
+
+        event_id = f"event.newsroom_{target_date.replace('-', '_')}_001"
+        operations = [
+            {
+                "op": "add_timeline_event",
+                "atom": {
+                    "id": event_id,
+                    "type": "event",
+                    "name": headline[:80],
+                    "summary": summary,
+                    "tags": ["newsroom", "generated-news"],
+                    "data": {
+                        "date_or_era": target_date,
+                        "participants": participants,
+                        "locations": locations,
+                        "causes": [],
+                        "consequences": [
+                            effect
+                            for effect in first_story.get("continuity_effects", [])
+                            if isinstance(effect, str) and effect.strip()
+                        ],
+                    },
+                },
+            }
+        ]
+
+        metadata = first_story.get("metadata", {})
+        story_id = metadata.get("story_id", f"story-{target_date}-001") if isinstance(metadata, dict) else f"story-{target_date}-001"
+
+        if len(refs) >= 2:
+            operations.append(
+                {
+                    "op": "add_relationship",
+                    "subject": refs[0],
+                    "predicate": "involved_in_news_event",
+                    "object": event_id,
+                    "canon_tier": "established",
+                    "source": story_id,
+                }
+            )
+
+        return json.dumps(
+            {
+                "schema_version": "worldcodex.patch.v1",
+                "id": f"patch-{target_date}-newsroom",
+                "description": f"Newsroom canon proposals from stories published on {target_date}.",
+                "operations": operations,
+            }
+        )
 
     def _generate_canon_patch(self, request: PromptRequest) -> str:
         now = datetime.now(tz=timezone.utc)
