@@ -303,12 +303,8 @@ def test_update_world_command_generates_patch_and_snapshot(tmp_path, monkeypatch
     assert (tmp_path / "snapshots" / "2026-04-13" / "worldcodex_preview.txt").exists()
 
 
-def test_add_canon_command_merges_operator_note_and_refreshes_sqlite(tmp_path, monkeypatch) -> None:
+def test_add_canon_command_is_deprecated(tmp_path, monkeypatch) -> None:
     monkeypatch.setenv("NEWSROOM_DATA_DIR", str(tmp_path))
-    monkeypatch.setenv("NEWSROOM_LLM_PROVIDER", "mock")
-
-    init_result = runner.invoke(app, ["init-world", "--prompt", "A synthetic island city ruled by corporate blocs."])
-    assert init_result.exit_code == 0
 
     add_result = runner.invoke(
         app,
@@ -321,39 +317,13 @@ def test_add_canon_command_merges_operator_note_and_refreshes_sqlite(tmp_path, m
         ],
     )
 
-    assert add_result.exit_code == 0
-    assert "Added canon note for 2026-04-14" in add_result.stdout
-    updated_world = json.loads((tmp_path / "worlds" / "world_bible.json").read_text(encoding="utf-8"))
-    organization_names = {org["name"] for org in updated_world["organizations"]}
-    people_names = {person["name"] for person in updated_world["people"]}
-    location_names = {loc["name"] for loc in updated_world["locations"]}
-    assert "Helix Dynamics" in organization_names
-    assert "Mara Voss" in people_names
-    assert "Glass Harbor" in location_names
-    assert (tmp_path / "patches").exists()
-
-    summary_result = runner.invoke(app, ["world-summary", "--output", "json"])
-    assert summary_result.exit_code == 0
-    payload = json.loads(summary_result.stdout)
-    assert payload["sqlite_entity_counts"] == {
-        "factions": 2,
-        "locations": 3,
-        "characters": 2,
-        "lore_entries": 5,
-    }
+    assert add_result.exit_code == 2
+    assert "manual canon edits belong in WorldCodex" in add_result.stdout or "WorldCodex now owns world-building" in add_result.stdout
+    assert not (tmp_path / "worlds" / "world_bible.json").exists()
 
 
-def test_add_canon_dry_run_outputs_patch_without_mutating_files_or_sqlite(tmp_path, monkeypatch) -> None:
+def test_add_canon_dry_run_is_deprecated_without_mutating_files(tmp_path, monkeypatch) -> None:
     monkeypatch.setenv("NEWSROOM_DATA_DIR", str(tmp_path))
-    monkeypatch.setenv("NEWSROOM_LLM_PROVIDER", "mock")
-
-    init_result = runner.invoke(app, ["init-world", "--prompt", "A synthetic island city ruled by corporate blocs."])
-    assert init_result.exit_code == 0
-
-    world_before = json.loads((tmp_path / "worlds" / "world_bible.json").read_text(encoding="utf-8"))
-    summary_before = runner.invoke(app, ["world-summary", "--output", "json"])
-    assert summary_before.exit_code == 0
-    sqlite_before = json.loads(summary_before.stdout)["sqlite_entity_counts"]
 
     dry_run_result = runner.invoke(
         app,
@@ -367,16 +337,6 @@ def test_add_canon_dry_run_outputs_patch_without_mutating_files_or_sqlite(tmp_pa
         ],
     )
 
-    assert dry_run_result.exit_code == 0
-    patch_payload = json.loads(dry_run_result.stdout)
-    assert patch_payload["date"] == "2026-04-14"
-    assert patch_payload["new_organizations"][0]["name"] == "Helix Dynamics"
-
-    world_after = json.loads((tmp_path / "worlds" / "world_bible.json").read_text(encoding="utf-8"))
-    assert world_after == world_before
-    patches_dir = tmp_path / "patches"
-    assert not patches_dir.exists() or not any(patches_dir.iterdir())
-    summary_after = runner.invoke(app, ["world-summary", "--output", "json"])
-    assert summary_after.exit_code == 0
-    sqlite_after = json.loads(summary_after.stdout)["sqlite_entity_counts"]
-    assert sqlite_after == sqlite_before
+    assert dry_run_result.exit_code == 2
+    assert "WorldCodex now owns world-building" in dry_run_result.stdout
+    assert not (tmp_path / "patches").exists()

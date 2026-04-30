@@ -4,24 +4,28 @@
 
 Build a Python application that generates a **fictional daily news feed** for a synthetic world and exposes it as a standard RSS/Atom feed that can be consumed by common feed readers.
 
-The system revolves around two AI roles:
+WorldWeaver is now a client of WorldCodex.
 
-1. **World Architect**
+WorldCodex owns:
 
-   * Creates and maintains the canonical world model, called the **world bible**.
-   * Incorporates lasting changes from generated stories back into the canon.
+* world creation
+* canonical atoms, relationships, timeline, and canon state
+* world exports
+* patch validation, preview, and application
 
-2. **News Reporter**
+WorldWeaver owns:
 
-   * Reads the current world bible.
-   * Produces a daily batch of news stories set in that world.
+* fictional news story generation from WorldCodex `news-context` exports
+* story archives
+* RSS/Atom feed output
+* WorldCodex patch proposals derived from published stories
 
 The key loop is:
 
-1. User provides initial world seed ideas.
-2. World Architect generates the initial world bible.
-3. News Reporter generates today’s fictional news stories.
-4. World Architect reads those stories and produces structured updates to the world bible.
+1. WorldCodex provides `world export <world> news-context`.
+2. WorldWeaver generates today's fictional news stories.
+3. WorldWeaver proposes a `worldcodex.patch.v1` update from durable story effects.
+4. WorldCodex validates, previews, and applies the patch when approved.
 5. Feed publisher emits the current stories as RSS/Atom.
 6. The loop repeats daily, allowing the world to evolve over time.
 
@@ -31,11 +35,10 @@ The design goal is to keep the system modular, testable, deterministic where pra
 
 ## High-Level Product Goal
 
-Create a local-first application that:
+Create a local-first newsroom application that:
 
-* generates an initial fictional world from user prompts
-* generates daily fictional news articles from that world
-* updates the world over time based on those stories
+* generates daily fictional news articles from a WorldCodex context
+* proposes world updates based on those stories
 * publishes the stories as a standard feed URL
 * supports later extension to multiple worlds, editorial styles, review workflows, and alternate LLM providers
 
@@ -45,20 +48,19 @@ This is **not** a generic news reader. It is a **fictional newsroom simulation e
 
 ## Core Design Principles
 
-1. **Structured canon first**
+1. **WorldCodex owns canon**
 
-   * The world bible must be stored as structured JSON.
-   * A markdown summary may be generated for humans, but JSON is the source of truth.
+   * Do not add new local world-building storage or editable world APIs.
+   * WorldWeaver should call WorldCodex for context, validation, preview, and patch application.
 
 2. **Patch-based updates**
 
-   * The World Architect must not rewrite the whole world bible every day.
-   * It should instead produce structured update patches that are merged into the canon.
+   * WorldWeaver must emit `worldcodex.patch.v1` proposals, not local world bible patches.
 
 3. **Reporter cannot directly edit canon**
 
    * The News Reporter generates stories only.
-   * Only the World Architect plus merge logic can update canon.
+   * WorldCodex applies canon updates.
 
 4. **Deterministic storage and IDs**
 
@@ -116,15 +118,13 @@ Codex should create a repository that is:
 
 ### The system must support:
 
-* creating a new world from a user seed prompt
-* storing the world as a structured world bible
+* reading WorldCodex world context exports
 * generating a daily batch of fictional stories
 * storing stories by date
 * exposing current stories via RSS and Atom
-* generating a structured canon update patch from a story batch
-* merging the update patch into the world bible
-* archiving snapshots of stories and canon
-* validating continuity and logging conflicts
+* generating a structured WorldCodex patch proposal from a story batch
+* validating, previewing, and optionally applying that patch through WorldCodex
+* archiving snapshots of stories and WorldCodex command outputs
 
 ### The system should support later:
 
@@ -339,68 +339,61 @@ Exact naming can vary slightly, but separation of concerns should stay intact.
 
 ## Main Runtime Flows
 
-### Flow A: Create Initial World
+### Flow A: Generate Daily Edition
 
-1. User provides seed prompt and optional settings.
-2. System calls World Architect prompt.
-3. Output is validated against world bible schema.
-4. Valid world bible is saved.
-5. Human-readable markdown summary is optionally generated.
-
-### Flow B: Generate Daily Edition
-
-1. Load current world bible.
+1. Export WorldCodex `news-context`.
 2. Determine target publication date.
 3. Call News Reporter prompt.
 4. Validate story batch.
 5. Save story batch.
 6. Publish feed output.
 
-### Flow C: Update Canon From Stories
+### Flow B: Propose Canon Updates From Stories
 
-1. Load current world bible.
+1. Export WorldCodex `news-context`.
 2. Load story batch for target date.
-3. Call World Architect patch prompt.
-4. Validate patch.
-5. Run continuity checks.
-6. Merge patch into world bible.
-7. Save updated world bible.
-8. Archive snapshot.
+3. Call WorldCodex patch proposal prompt.
+4. Validate local `worldcodex.patch.v1` shape.
+5. Save patch proposal.
+6. Ask WorldCodex to validate and preview.
+7. Apply through WorldCodex only when approved.
+8. Archive story, patch, validate, preview, and apply outputs.
 
-### Flow D: Scheduled Daily Run
+### Flow C: Scheduled Daily Run
 
 1. Generate daily stories.
 2. Publish feed.
-3. Generate canon patch.
-4. Validate and merge.
-5. Save snapshot and logs.
+3. Generate WorldCodex patch proposal.
+4. Validate and preview through WorldCodex.
+5. Apply through WorldCodex if the workflow allows automatic apply.
+6. Save snapshot and logs.
 
 ---
 
 ## LLM Role Definitions
 
-### World Architect
+### WorldCodex Patch Proposer
 
 Responsibilities:
 
-* create initial world bible from seed ideas
-* derive structured updates from stories
-* preserve internal consistency
-* classify uncertain items as rumors or open threads when needed
+* derive `worldcodex.patch.v1` proposals from published stories
+* preserve WorldCodex atom IDs when stories reference existing canon
+* propose timeline events, relationships, and durable atoms only when they help future tools
+* leave validation, conflict resolution, and application to WorldCodex
 
 Rules:
 
 * must return schema-conforming JSON only
 * must not generate prose outside the response schema
-* must not rewrite unrelated sections of canon during patch generation
-* should prefer updating existing entities when the match is strong
-* should emit warnings rather than forcing ambiguous merges
+* must not rewrite unrelated canon
+* should prefer linking existing atoms over creating duplicates
+* should keep uncertain claims out of canon unless represented as appropriate patch operations
 
 ### News Reporter
 
 Responsibilities:
 
-* generate interesting daily news stories grounded in the world bible
+* generate interesting daily news stories grounded in WorldCodex context
 * vary categories and story types
 * reference existing canon when possible
 * introduce new entities only when narratively justified
@@ -460,7 +453,6 @@ The application must expose at least:
 * `GET /feed/rss.xml`
 * `GET /feed/atom.xml`
 * `GET /stories/today`
-* `GET /world/summary`
 
 ### Feed behavior
 
@@ -478,20 +470,17 @@ Use Typer or similar to provide a simple command-line interface.
 Suggested commands:
 
 ```text
-newsroom init-world
 newsroom generate-news --date YYYY-MM-DD
 newsroom update-world --date YYYY-MM-DD
-newsroom publish-feed
-newsroom run-daily --date YYYY-MM-DD
+newsroom update-world --date YYYY-MM-DD --apply
+newsroom propose-world-patch --date YYYY-MM-DD
 newsroom serve
 ```
 
 Optional later commands:
 
 ```text
-newsroom validate-world
 newsroom show-story --date YYYY-MM-DD --id STORY_ID
-newsroom export-world-md
 newsroom list-snapshots
 ```
 
@@ -506,17 +495,15 @@ Use file-based JSON storage plus optional SQLite metadata.
 Suggested files:
 
 ```text
-data/worlds/world_bible.json
-data/worlds/world_bible.md
 data/stories/2026-04-09.json
 data/feeds/rss.xml
 data/feeds/atom.xml
 data/snapshots/2026-04-09/
-  world_before.json
-  stories.json
-  patch.json
-  world_after.json
-  validation_report.json
+  story_batch.json
+  worldcodex_patch.json
+  worldcodex_validate.txt
+  worldcodex_preview.txt
+  worldcodex_apply.txt
 ```
 
 ### Design expectation
@@ -653,32 +640,30 @@ Create a clean runnable scaffold with schemas, config, CLI shell, FastAPI shell,
 * CLI help works
 * tests run successfully
 
-# Milestone 2: Initial World Creation
+# Milestone 2: WorldCodex Context Story Generation
 
 ## Goal
 
-Generate the initial world bible from a user seed prompt.
+Generate a daily edition from a WorldCodex `news-context` export.
 
 ## Build
 
-* world architect prompt
 * LLM provider interface
-* world generation service
-* save `world_bible.json`
-* optional `world_bible.md`
+* reporter prompt
+* story generation service
+* story batch persistence by date
 
 ## Acceptance Criteria
 
-* `newsroom init-world` accepts a prompt or prompt file
-* valid world bible is created
-* output includes at least a baseline set of people, organizations, locations, and timeline facts
-* tests mock the LLM and validate output persistence
+* `newsroom generate-news` calls WorldCodex for `news-context`
+* story output validates and persists
+* no local `world_bible.json` is required
 
 # Milestone 3: Daily Story Generation
 
 ## Goal
 
-Generate a daily edition from the world bible.
+Generate a daily edition from WorldCodex `news-context`.
 
 ## Build
 
@@ -721,36 +706,33 @@ Create structured world updates from the day’s stories.
 
 ## Build
 
-* patch prompt for the World Architect
-* patch schema
+* WorldCodex patch proposal prompt
+* `worldcodex.patch.v1` local shape validation
 * patch persistence
 * patch validation
 
 ## Acceptance Criteria
 
-* `newsroom update-world --date YYYY-MM-DD` creates a patch file
+* `newsroom update-world --date YYYY-MM-DD` creates, validates, and previews a WorldCodex patch file
 * patch includes timeline events and entity updates where applicable
 * invalid patch output is rejected or retried
 
-# Milestone 6: Merge Engine
+# Milestone 6: WorldCodex Apply Workflow
 
 ## Goal
 
-Apply a patch to the world bible safely.
+Apply a patch through WorldCodex safely.
 
 ## Build
 
-* merge service
-* entity matching logic
-* append/update rules
+* WorldCodex validate/preview/apply calls
 * snapshot archiving
 
 ## Acceptance Criteria
 
-* patch can be merged into canon
-* updated world bible is saved
-* unchanged sections are preserved
-* snapshot folder contains before/after state and patch
+* patch can be validated and previewed
+* patch is applied only when approved
+* snapshot folder contains story, patch, validate, preview, and apply outputs
 
 # Milestone 7: Continuity Validator
 
@@ -923,10 +905,10 @@ Prompt files should be easy to tweak without rewriting application code.
 
 The project is considered complete for the first major version when:
 
-* a user can seed a fictional world
-* the application can generate daily news stories for that world
+* a user can connect WorldWeaver to a WorldCodex world
+* the application can generate daily news stories for that world context
 * the stories appear in a standard feed reader through RSS or Atom
-* the world bible updates over time from those stories
+* WorldCodex receives patch proposals from those stories
 * the system archives and validates each generation cycle
 * the codebase is modular enough for future UI and provider expansion
 
@@ -948,4 +930,3 @@ If Codex needs the simplest execution order, follow this exact sequence:
 10. add scheduler and inspection endpoints
 
 This order is preferred because it proves the full creative loop early while keeping the system debuggable.
-

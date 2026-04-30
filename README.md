@@ -2,6 +2,10 @@
 
 Local-first fictional newsroom simulator with a CLI and FastAPI API.
 
+WorldWeaver is a WorldCodex client. WorldCodex owns world creation, canon storage, world summaries,
+atoms, relationships, timeline, and patch application. WorldWeaver owns story generation, story
+archives, RSS/Atom feeds, and patch proposals derived from published stories.
+
 ## Setup
 
 ```bash
@@ -23,10 +27,6 @@ Use `newsroom --help` for full option details.
 newsroom serve
 newsroom serve --host 0.0.0.0 --port 8010
 
-# Create initial world bible
-newsroom init-world --prompt "A synthetic island city ruled by corporate blocs."
-newsroom init-world --prompt-file ./seed_prompt.txt
-
 # Generate one daily story batch from a WorldCodex news-context export
 newsroom generate-news --date 2026-04-13
 
@@ -39,11 +39,6 @@ newsroom update-world --date 2026-04-13
 # Apply the validated patch to WorldCodex
 newsroom update-world --date 2026-04-13 --apply
 
-# Add your own canon note as text or from a file
-newsroom add-canon --text "Add a corporation called Helix Dynamics in Glass Harbor, led by Mara Voss."
-newsroom add-canon --file ./canon_note.txt --date 2026-04-14
-newsroom add-canon --dry-run --text "Add a corporation called Helix Dynamics in Glass Harbor, led by Mara Voss."
-
 # Persist the selected LLM provider/model for this repo
 newsroom set-llm-provider --provider mock
 newsroom set-llm-provider --provider openai --model gpt-4.1
@@ -51,17 +46,11 @@ newsroom set-llm-provider --provider openai --model gpt-4.1
 # Verify the selected provider/model before generation
 newsroom test-llm-connection
 
-# Ingest markdown + seed json into canonical files and SQLite entities
+# Deprecated local world-building commands now print WorldCodex migration guidance
+newsroom init-world
 newsroom ingest-world-bible
-newsroom ingest-world-bible \
-  --source-markdown data/world-bible.md \
-  --seed-json data/worlds/world_bible.seed.v1.json \
-  --world-id world-main
-
-# Summarize world state for debugging
+newsroom add-canon
 newsroom world-summary
-newsroom world-summary --output json
-newsroom world-summary --world-id world-new-meridian
 ```
 
 ## Environment Variables
@@ -98,26 +87,16 @@ No auth required:
 - `GET /feed/rss.xml` (alias: `GET /feeds/rss.xml`)
 - `GET /feed/atom.xml` (alias: `GET /feeds/atom.xml`)
 
-Requires bearer token (`Authorization: Bearer $NEWSROOM_API_TOKEN`):
-
-- `GET|POST /api/world/{world_id}/factions`
-- `GET|PATCH|DELETE /api/world/{world_id}/factions/{entity_id}`
-- `GET|POST /api/world/{world_id}/locations`
-- `GET|PATCH|DELETE /api/world/{world_id}/locations/{entity_id}`
-- `GET|POST /api/world/{world_id}/characters`
-- `GET|PATCH|DELETE /api/world/{world_id}/characters/{entity_id}`
-- `GET|POST /api/world/{world_id}/lore`
-- `GET|PATCH|DELETE /api/world/{world_id}/lore/{entity_id}`
+World-building APIs are not mounted in WorldWeaver. Use WorldCodex for editable world and canon
+operations.
 
 ## Manual Smoke Test
 
 ```bash
 source .venv/bin/activate
-newsroom init-world --prompt "A dense floating city ruled by data cartels."
 newsroom generate-news --date 2026-04-11
 newsroom update-world --date 2026-04-11
 newsroom update-world --date 2026-04-11 --apply
-newsroom add-canon --text "Add a new harbor district controlled by an independent freight syndicate."
 newsroom serve
 ```
 

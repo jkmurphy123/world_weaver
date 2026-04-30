@@ -196,7 +196,6 @@ def test_cli_ingest_world_bible_command(tmp_path, monkeypatch) -> None:
         ],
     )
 
-    assert result.exit_code == 0
-    assert "Ingested world bible for world_id=world-new-meridian" in result.stdout
-    assert (tmp_path / "data" / "worlds" / "world_bible.json").exists()
-    assert (tmp_path / "data" / "worlds" / "world_bible.md").exists()
+    assert result.exit_code == 2
+    assert "world bible ingestion belongs in WorldCodex" in result.stdout
+    assert not (tmp_path / "data" / "worlds" / "world_bible.json").exists()
