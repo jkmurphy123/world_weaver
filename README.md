@@ -33,8 +33,11 @@ newsroom generate-news --date 2026-04-13
 # Propose WorldCodex canon updates from a saved story batch
 newsroom propose-world-patch --date 2026-04-13
 
-# Merge a day's published stories back into canon
+# Validate and preview a WorldCodex patch from a saved story batch
 newsroom update-world --date 2026-04-13
+
+# Apply the validated patch to WorldCodex
+newsroom update-world --date 2026-04-13 --apply
 
 # Add your own canon note as text or from a file
 newsroom add-canon --text "Add a corporation called Helix Dynamics in Glass Harbor, led by Mara Voss."
@@ -113,6 +116,7 @@ source .venv/bin/activate
 newsroom init-world --prompt "A dense floating city ruled by data cartels."
 newsroom generate-news --date 2026-04-11
 newsroom update-world --date 2026-04-11
+newsroom update-world --date 2026-04-11 --apply
 newsroom add-canon --text "Add a new harbor district controlled by an independent freight syndicate."
 newsroom serve
 ```

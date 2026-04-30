@@ -1,5 +1,6 @@
 import json
 from datetime import date, datetime, timezone
+from pathlib import Path
 
 from typer.testing import CliRunner
 
@@ -10,6 +11,7 @@ from world_weaver.services.merge_service import MergeService
 from world_weaver.services.patch_service import PatchService
 from world_weaver.services.story_service import StoryService
 from world_weaver.services.world_generation import WorldGenerationService
+from world_weaver.worldcodex_client import CommandResult
 
 
 runner = CliRunner()
@@ -34,6 +36,37 @@ class _StubPatchProvider:
     def generate_json(self, request: PromptRequest) -> str:
         self.requests.append(request)
         return self.payload
+
+
+class _FakeWorldCodexClient:
+    def __init__(self) -> None:
+        self.news_context = {
+            "metadata": {
+                "schema_version": "worldcodex.context.v1",
+                "export_type": "news_context",
+                "world_id": "world-new-meridian",
+            },
+            "places": [{"id": "place.central", "name": "Meridian Central"}],
+            "factions": [{"id": "org.council", "name": "Meridian Council"}],
+        }
+        self.validated_patches: list[Path] = []
+        self.previewed_patches: list[Path] = []
+        self.applied_patches: list[Path] = []
+
+    def export_context(self, context_type: str) -> dict:
+        return self.news_context
+
+    def validate_patch(self, patch_path: Path) -> CommandResult:
+        self.validated_patches.append(patch_path)
+        return CommandResult(args=(), returncode=0, stdout="validated", stderr="")
+
+    def preview_patch(self, patch_path: Path) -> CommandResult:
+        self.previewed_patches.append(patch_path)
+        return CommandResult(args=(), returncode=0, stdout="previewed", stderr="")
+
+    def apply_patch(self, patch_path: Path) -> CommandResult:
+        self.applied_patches.append(patch_path)
+        return CommandResult(args=(), returncode=0, stdout="applied", stderr="")
 
 
 def test_patch_service_generates_valid_canon_update_patch(tmp_path) -> None:
@@ -225,25 +258,49 @@ def test_merge_service_applies_patch_without_dropping_existing_canon(tmp_path) -
 def test_update_world_command_generates_patch_and_snapshot(tmp_path, monkeypatch) -> None:
     monkeypatch.setenv("NEWSROOM_DATA_DIR", str(tmp_path))
     monkeypatch.setenv("NEWSROOM_LLM_PROVIDER", "mock")
+    fake_worldcodex = _FakeWorldCodexClient()
+    monkeypatch.setattr("world_weaver.cli.build_worldcodex_client", lambda **_: fake_worldcodex)
 
-    init_result = runner.invoke(app, ["init-world", "--prompt", "A synthetic island city ruled by corporate blocs."])
-    assert init_result.exit_code == 0
-
-    generate_result = runner.invoke(app, ["generate-news", "--date", "2026-04-13"])
-    assert generate_result.exit_code == 0
+    stories_dir = tmp_path / "stories"
+    stories_dir.mkdir(parents=True, exist_ok=True)
+    (stories_dir / "2026-04-13.json").write_text(
+        json.dumps(
+            {
+                "date": "2026-04-13",
+                "stories": [
+                    {
+                        "headline": "Council changes freight access",
+                        "summary": "The council changed freight access after a tense vote.",
+                        "body": "A complete story body.",
+                        "category": "politics",
+                        "referenced_entities": ["org.council", "place.central"],
+                        "continuity_effects": ["Freight access rules changed."],
+                        "metadata": {
+                            "story_id": "story-2026-04-13-001",
+                            "published_at": "2026-04-13T12:00:00+00:00",
+                            "target_date": "2026-04-13",
+                            "world_id": "world-new-meridian",
+                        },
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
 
     update_result = runner.invoke(app, ["update-world", "--date", "2026-04-13"])
 
     assert update_result.exit_code == 0
-    assert "Updated world canon for 2026-04-13" in update_result.stdout
-    assert (tmp_path / "patches" / "2026-04-13.json").exists()
-    assert (tmp_path / "snapshots" / "2026-04-13" / "world_before.json").exists()
-    assert (tmp_path / "snapshots" / "2026-04-13" / "world_after.json").exists()
-
-    updated_world = json.loads((tmp_path / "worlds" / "world_bible.json").read_text(encoding="utf-8"))
-    assert updated_world["continuity"]["current_date"] == "2026-04-13"
-    assert len(updated_world["timeline"]) >= 2
-    assert len(updated_world["open_threads"]) >= 1
+    assert "WorldCodex patch previewed for 2026-04-13" in update_result.stdout
+    patch_path = tmp_path / "patches" / "2026-04-13.json"
+    assert patch_path.exists()
+    assert fake_worldcodex.validated_patches == [patch_path]
+    assert fake_worldcodex.previewed_patches == [patch_path]
+    assert fake_worldcodex.applied_patches == []
+    assert (tmp_path / "snapshots" / "2026-04-13" / "story_batch.json").exists()
+    assert (tmp_path / "snapshots" / "2026-04-13" / "worldcodex_patch.json").exists()
+    assert (tmp_path / "snapshots" / "2026-04-13" / "worldcodex_validate.txt").exists()
+    assert (tmp_path / "snapshots" / "2026-04-13" / "worldcodex_preview.txt").exists()
 
 
 def test_add_canon_command_merges_operator_note_and_refreshes_sqlite(tmp_path, monkeypatch) -> None:

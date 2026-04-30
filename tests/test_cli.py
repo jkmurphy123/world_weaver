@@ -4,6 +4,7 @@ from pathlib import Path
 from typer.testing import CliRunner
 
 from world_weaver.cli import app
+from world_weaver.worldcodex_client import CommandResult
 from world_weaver.storage.sqlite_world_store import SqliteWorldStore, WorldEntityRepository
 
 
@@ -23,10 +24,25 @@ class _FakeWorldCodexClient:
             "open_threads": [{"id": "conflict.trade", "summary": "Trade routes remain contested."}],
         }
         self.exported_contexts: list[str] = []
+        self.validated_patches: list[Path] = []
+        self.previewed_patches: list[Path] = []
+        self.applied_patches: list[Path] = []
 
     def export_context(self, context_type: str) -> dict:
         self.exported_contexts.append(context_type)
         return self.news_context
+
+    def validate_patch(self, patch_path: Path) -> CommandResult:
+        self.validated_patches.append(patch_path)
+        return CommandResult(args=(), returncode=0, stdout="validated", stderr="")
+
+    def preview_patch(self, patch_path: Path) -> CommandResult:
+        self.previewed_patches.append(patch_path)
+        return CommandResult(args=(), returncode=0, stdout="previewed", stderr="")
+
+    def apply_patch(self, patch_path: Path) -> CommandResult:
+        self.applied_patches.append(patch_path)
+        return CommandResult(args=(), returncode=0, stdout="applied", stderr="")
 
 
 def test_cli_help_works() -> None:
@@ -233,28 +249,96 @@ def test_init_world_requires_exactly_one_prompt_input() -> None:
     assert "Provide exactly one of --prompt or --prompt-file" in combined_output
 
 
-def test_update_world_command_refreshes_sqlite_projection(tmp_path, monkeypatch) -> None:
+def test_update_world_command_previews_worldcodex_patch_without_applying(tmp_path, monkeypatch) -> None:
     monkeypatch.setenv("NEWSROOM_DATA_DIR", str(tmp_path))
     monkeypatch.setenv("NEWSROOM_LLM_PROVIDER", "mock")
+    fake_worldcodex = _FakeWorldCodexClient()
+    monkeypatch.setattr("world_weaver.cli.build_worldcodex_client", lambda **_: fake_worldcodex)
 
-    init_result = runner.invoke(app, ["init-world", "--prompt", "A synthetic island city ruled by corporate blocs."])
-    assert init_result.exit_code == 0
-    generate_result = runner.invoke(app, ["generate-news", "--date", "2026-04-13"])
-    assert generate_result.exit_code == 0
+    stories_dir = tmp_path / "stories"
+    stories_dir.mkdir(parents=True, exist_ok=True)
+    (stories_dir / "2026-04-13.json").write_text(
+        json.dumps(
+            {
+                "date": "2026-04-13",
+                "stories": [
+                    {
+                        "headline": "Council changes freight access",
+                        "summary": "The council changed freight access after a tense vote.",
+                        "body": "A complete story body.",
+                        "category": "politics",
+                        "referenced_entities": ["org.council", "place.central"],
+                        "continuity_effects": ["Freight access rules changed."],
+                        "metadata": {
+                            "story_id": "story-2026-04-13-001",
+                            "published_at": "2026-04-13T12:00:00+00:00",
+                            "target_date": "2026-04-13",
+                            "world_id": "world-new-meridian",
+                        },
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
 
     update_result = runner.invoke(app, ["update-world", "--date", "2026-04-13"])
 
     assert update_result.exit_code == 0
-    summary_result = runner.invoke(app, ["world-summary", "--output", "json"])
-    assert summary_result.exit_code == 0
-    payload = json.loads(summary_result.stdout)
-    assert payload["canon_counts"]["open_threads"] >= 1
-    assert payload["sqlite_entity_counts"] == {
-        "factions": 1,
-        "locations": 2,
-        "characters": 1,
-        "lore_entries": 5,
-    }
+    assert "WorldCodex patch previewed for 2026-04-13" in update_result.stdout
+    assert "No canon changes applied" in update_result.stdout
+    patch_path = tmp_path / "patches" / "2026-04-13.json"
+    assert patch_path.exists()
+    assert fake_worldcodex.validated_patches == [patch_path]
+    assert fake_worldcodex.previewed_patches == [patch_path]
+    assert fake_worldcodex.applied_patches == []
+    assert (tmp_path / "snapshots" / "2026-04-13" / "worldcodex_validate.txt").exists()
+    assert (tmp_path / "snapshots" / "2026-04-13" / "worldcodex_preview.txt").exists()
+    assert not (tmp_path / "snapshots" / "2026-04-13" / "worldcodex_apply.txt").exists()
+
+
+def test_update_world_command_applies_when_requested(tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("NEWSROOM_DATA_DIR", str(tmp_path))
+    monkeypatch.setenv("NEWSROOM_LLM_PROVIDER", "mock")
+    fake_worldcodex = _FakeWorldCodexClient()
+    monkeypatch.setattr("world_weaver.cli.build_worldcodex_client", lambda **_: fake_worldcodex)
+
+    stories_dir = tmp_path / "stories"
+    stories_dir.mkdir(parents=True, exist_ok=True)
+    (stories_dir / "2026-04-13.json").write_text(
+        json.dumps(
+            {
+                "date": "2026-04-13",
+                "stories": [
+                    {
+                        "headline": "Council changes freight access",
+                        "summary": "The council changed freight access after a tense vote.",
+                        "body": "A complete story body.",
+                        "category": "politics",
+                        "referenced_entities": ["org.council", "place.central"],
+                        "continuity_effects": ["Freight access rules changed."],
+                        "metadata": {
+                            "story_id": "story-2026-04-13-001",
+                            "published_at": "2026-04-13T12:00:00+00:00",
+                            "target_date": "2026-04-13",
+                            "world_id": "world-new-meridian",
+                        },
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    update_result = runner.invoke(app, ["update-world", "--date", "2026-04-13", "--apply"])
+
+    assert update_result.exit_code == 0
+    assert "WorldCodex patch applied for 2026-04-13" in update_result.stdout
+    patch_path = tmp_path / "patches" / "2026-04-13.json"
+    assert fake_worldcodex.validated_patches == [patch_path]
+    assert fake_worldcodex.previewed_patches == [patch_path]
+    assert fake_worldcodex.applied_patches == [patch_path]
+    assert (tmp_path / "snapshots" / "2026-04-13" / "worldcodex_apply.txt").exists()
 
 
 def test_world_summary_command_outputs_json_with_story_and_sqlite_counts(tmp_path, monkeypatch) -> None:

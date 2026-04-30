@@ -39,6 +39,36 @@ def _slugify(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-") or "note"
 
 
+def _archive_worldcodex_patch_run(
+    *,
+    snapshots_dir: Path,
+    target_date: str,
+    story_batch_payload: dict[str, Any],
+    patch: dict[str, Any],
+    validate_output: str,
+    preview_output: str,
+    apply_output: str | None,
+) -> Path:
+    snapshot_dir = snapshots_dir / target_date
+    snapshot_dir.mkdir(parents=True, exist_ok=True)
+    artifacts = {
+        "story_batch.json": story_batch_payload,
+        "worldcodex_patch.json": patch,
+        "worldcodex_validate.txt": validate_output,
+        "worldcodex_preview.txt": preview_output,
+    }
+    if apply_output is not None:
+        artifacts["worldcodex_apply.txt"] = apply_output
+
+    for filename, payload in artifacts.items():
+        path = snapshot_dir / filename
+        if isinstance(payload, str):
+            path.write_text(payload, encoding="utf-8")
+        else:
+            path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    return snapshot_dir
+
+
 @app.command()
 def serve(host: str | None = None, port: int | None = None) -> None:
     """Run the newsroom API server."""
@@ -84,11 +114,13 @@ def generate_news(target_date: str = typer.Option(..., "--date", help="Date in Y
 
 
 @app.command("update-world")
-def update_world(target_date: str = typer.Option(..., "--date", help="Date in YYYY-MM-DD format")) -> None:
-    """Generate a world-canon patch from a story batch and merge it into the world bible."""
+def update_world(
+    target_date: str = typer.Option(..., "--date", help="Date in YYYY-MM-DD format"),
+    apply: bool = typer.Option(False, "--apply", help="Apply the validated patch to WorldCodex after preview"),
+) -> None:
+    """Generate, validate, and preview or apply a WorldCodex patch from a story batch."""
     settings = get_settings()
     parsed_date = date.fromisoformat(target_date)
-    world_path = settings.data_dir / "worlds" / "world_bible.json"
 
     provider = build_provider(settings)
     story_service = StoryService(
@@ -96,58 +128,59 @@ def update_world(target_date: str = typer.Option(..., "--date", help="Date in YY
         provider=provider,
         prompts_dir=Path(__file__).resolve().parent / "prompts",
     )
-    world_before = story_service.load_world_bible(world_path)
     batch = story_service.load_batch(parsed_date)
     if batch is None:
         raise typer.BadParameter(f"Story batch not found for {parsed_date.isoformat()}")
 
-    patch_service = PatchService(
+    worldcodex = build_worldcodex_client(
+        world_id=settings.worldcodex_world,
+        cli=settings.worldcodex_cli,
+        timeout_seconds=settings.worldcodex_timeout_seconds,
+    )
+    try:
+        news_context = worldcodex.export_context("news-context")
+    except WorldCodexClientError as exc:
+        typer.echo(f"Unable to load WorldCodex news context: {exc}")
+        raise typer.Exit(code=1) from exc
+
+    proposal_service = WorldCodexPatchProposalService(
         provider=provider,
         prompts_dir=Path(__file__).resolve().parent / "prompts",
         patches_dir=settings.data_dir / "patches",
     )
-    patch = patch_service.generate_patch(
+    patch = proposal_service.generate_patch(
         target_date=parsed_date.isoformat(),
-        world_bible=world_before,
+        news_context=news_context,
         story_batch=batch,
         model=settings.llm_model,
     )
-    patch_path = patch_service.save_patch(patch)
+    patch_path = proposal_service.save_patch(patch, filename_stem=parsed_date.isoformat())
 
-    merge_service = MergeService(
-        worlds_dir=settings.data_dir / "worlds",
+    try:
+        validate_result = worldcodex.validate_patch(patch_path)
+        preview_result = worldcodex.preview_patch(patch_path)
+        apply_result = worldcodex.apply_patch(patch_path) if apply else None
+    except WorldCodexClientError as exc:
+        typer.echo(f"WorldCodex patch command failed: {exc}")
+        raise typer.Exit(code=1) from exc
+
+    snapshot_path = _archive_worldcodex_patch_run(
         snapshots_dir=settings.data_dir / "snapshots",
-    )
-    world_after, report = merge_service.apply_patch(world_bible=world_before, patch=patch)
-    json_path, _ = merge_service.save_world(world_after)
-    WorldDbSyncService(
-        world_store=_build_world_store(data_dir=settings.data_dir, world_db_filename=settings.world_db_filename)
-    ).refresh_from_world_bible(world_after)
-    snapshot_path = merge_service.archive_run(
         target_date=parsed_date.isoformat(),
-        world_before=world_before,
         story_batch_payload=batch.model_dump(mode="json"),
         patch=patch,
-        world_after=world_after,
-        merge_report=report,
+        validate_output=validate_result.stdout,
+        preview_output=preview_result.stdout,
+        apply_output=apply_result.stdout if apply_result is not None else None,
     )
 
+    mode = "applied" if apply else "previewed"
     typer.echo(
-        "Updated world canon "
-        f"for {parsed_date.isoformat()} at {json_path} "
-        f"(patch: {patch_path}, snapshot: {snapshot_path})"
+        f"WorldCodex patch {mode} for {parsed_date.isoformat()} "
+        f"(patch: {patch_path}, snapshot: {snapshot_path}, operations: {len(patch['operations'])})"
     )
-    typer.echo(
-        "Merge summary: "
-        f"timeline+={report.timeline_events_added}, "
-        f"threads+={report.open_threads_added}, "
-        f"threads_resolved={report.open_threads_resolved}, "
-        f"people+={report.people_added}/{report.people_updated} updated, "
-        f"orgs+={report.organizations_added}/{report.organizations_updated} updated, "
-        f"locations+={report.locations_added}/{report.locations_updated} updated."
-    )
-    if report.warnings:
-        typer.echo(f"Continuity warnings: {len(report.warnings)}")
+    if not apply:
+        typer.echo("No canon changes applied. Re-run with --apply to update WorldCodex.")
 
 
 @app.command("propose-world-patch")
