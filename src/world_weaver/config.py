@@ -56,6 +56,9 @@ class Settings(BaseSettings):
     default_world_id: str = "world-main"
     default_world_name: str = "New Meridian"
     default_story_count: int = 4
+    worldcodex_world: str = "world-main"
+    worldcodex_cli: str = "world"
+    worldcodex_timeout_seconds: int = 60
     llm_provider: str = "mock"
     llm_model: str = "mock-world-architect-v1"
     openai_api_key: str | None = None
